@@ -411,7 +411,7 @@ Proof.
 Theorem zero_nbeq_S : forall n:nat,
   beq_nat 0 (S n) = false.
 Proof.
-  intros. induction n as [| n']. reflexivity.simpl.
+  intros. induction n as [| n']. reflexivity. simpl.
   reflexivity. Qed.
 
 Theorem andb_false_r : forall b : bool,
@@ -436,7 +436,7 @@ Theorem mytool3 : forall n: nat,
                     n + 0 = n.
 Proof. intros n. induction n as [| n'].
        reflexivity.
-       simpl.rewrite IHn'. reflexivity. Qed.
+       simpl. rewrite IHn'. reflexivity. Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
 Proof.

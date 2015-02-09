@@ -78,7 +78,7 @@ Notation "P /\ Q" := (and P Q) : type_scope.
     will be appearing in propositions, not values.) *)
 
 (** Consider the "type" of the constructor [conj]: *)
-
+Check and.
 Check conj.
 (* ===>  forall P Q : Prop, P -> Q -> P /\ Q *)
 
@@ -139,7 +139,10 @@ Proof.
 Theorem proj2 : forall P Q : Prop, 
   P /\ Q -> Q.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q H.
+  inversion H.
+  apply H1.
+  Qed.
 (** [] *)
 
 Theorem and_commut : forall P Q : Prop, 
@@ -191,19 +194,30 @@ Proof.
    proving the left conjunct by itself and observe where things get
    stuck.) *)
 
+
+Check ev.
+
 Theorem even__ev : forall n : nat,
   (even n -> ev n) /\ (even (S n) -> ev (S n)).
 Proof.
+  intros n.
+  induction n. split. intros. apply ev_0.
+  intros. inversion H.
+  split. intros. inversion IHn. apply H1. apply H.
+  intros. inversion IHn. apply ev_SS. apply H0. inversion H. unfold even. apply H3. Qed.
   (* Hint: Use induction on [n]. *)
-  (* FILL IN HERE *) Admitted.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (conj_fact) *)
 (** Construct a proof object demonstrating the following proposition. *)
+Check conj.
+Check proj1.
 
 Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
-  (* FILL IN HERE *) admit.
+  fun(P Q R: Prop) (ARG1: P/\Q) (ARG2: Q/\R) => conj P R (proj1 P Q ARG1) (proj2 Q R ARG2).
 (** [] *)
+
 
 (* ###################################################### *)
 (** ** Iff *)
@@ -239,12 +253,20 @@ Proof.
 Theorem iff_refl : forall P : Prop, 
   P <-> P.
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros P. split. intros H. apply H. intros. apply H. Qed.
 
 Theorem iff_trans : forall P Q R : Prop, 
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros P Q R.
+  intros H1 H2.
+  split.
+  intros H3.
+  apply H2. apply H1. apply H3.
+  intros H3.
+  apply H1.
+  apply H2. apply H3.
+  Qed.
 
 (** Hint: If you have an iff hypothesis in the context, you can use
     [inversion] to break it into two separate implications.  (Think
@@ -260,9 +282,10 @@ Proof.
     using tactics. (_Hint_: if you make use of previously defined
     theorems, you should only need a single line!) *)
 
+Check beautiful__gorgeous.
 Definition beautiful_iff_gorgeous :
   forall n, beautiful n <-> gorgeous n :=
-  (* FILL IN HERE *) admit.
+  fun (n: nat) => conj (beautiful n -> gorgeous n) (gorgeous n -> beautiful n) (beautiful__gorgeous n) (gorgeous__beautiful n).
 (** [] *)
 
 (** Some of Coq's tactics treat [iff] statements specially, thus
@@ -357,8 +380,13 @@ Proof.
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros P Q R.
+  split.
+  intros. inversion H.  apply or_distributes_over_and_1. apply H.
+  inversion H. apply or_distributes_over_and_1. apply H.
+  apply or_distributes_over_and_1. apply H.
+  intros H.
+  left. inversion H. inversion H0. apply  H2. 
 
 (* ################################################### *)
 (** ** Relating [/\] and [\/] with [andb] and [orb] *)

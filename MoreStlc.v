@@ -1,14 +1,12 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
 
-(* $Date: 2012-04-30 05:09:42 -1000 (Mon, 30 Apr 2012) $ *)
-
-Require Export Stlc.
+Require Export Stlc. 
 
 (* ###################################################################### *)
 (** * Simple Extensions to STLC *)
 
 (** The simply typed lambda-calculus has enough structure to make its
-    theoretical properties interesting, but it is not yet much of a
+    theoretical properties interesting, but it is not much of a
     programming language.  In this chapter, we begin to close the gap
     with real-world languages by introducing a number of familiar
     features that have straightforward treatments at the level of
@@ -42,12 +40,16 @@ Require Export Stlc.
     at the rules defining this new feature as to wade through a lot of
     english text conveying the same information.  Here they are: *)
 
+
 (** Syntax:
 <<
        t ::=                Terms
            | ...               (other terms same as before)
            | let x=t in t      let-binding
->> 
+>>
+*)
+
+(**
     Reduction:
                                  t1 ==> t1'
                      ----------------------------------               (ST_Let1)
@@ -107,9 +109,10 @@ Require Export Stlc.
            | ...
            | T * T             product type
 >>
+*)
 
-   For evaluation, we need several new rules specifying how pairs and
-   projection behave.  
+(** For evaluation, we need several new rules specifying how pairs and
+    projection behave.  
                               t1 ==> t1'
                          --------------------                        (ST_Pair1)
                          (t1,t2) ==> (t1',t2)
@@ -174,13 +177,13 @@ Require Export Stlc.
 (** ** Unit *)
 
 (** Another handy base type, found especially in languages in
-    the ML family, is the singleton type [Unit].  It has a single
-    element -- the term constant [unit] (with a small [u]) -- and a
-    typing rule making [unit] an element of [Unit].  We also add
-    [unit] to the set of possible result values of computations --
-    indeed, [unit] is the _only_ possible result of evaluating an
-    expression of type [Unit]. *)
-   
+    the ML family, is the singleton type [Unit]. *)
+(** It has a single element -- the term constant [unit] (with a small
+    [u]) -- and a typing rule making [unit] an element of [Unit].  We
+    also add [unit] to the set of possible result values of
+    computations -- indeed, [unit] is the _only_ possible result of
+    evaluating an expression of type [Unit]. *)
+
 (** Syntax:
 <<
        t ::=                Terms
@@ -215,8 +218,7 @@ Require Export Stlc.
 
 (** ** Sums *)
 
-(**
-   Many programs need to deal with values that can take two distinct
+(** Many programs need to deal with values that can take two distinct
    forms.  For example, we might identify employees in an accounting
    application using using _either_ their name _or_ their id number.
    A search function might return _either_ a matching value _or_ an
@@ -227,27 +229,31 @@ Require Export Stlc.
 <<
        Nat + Bool
 >>
-   We create elements of these types by _tagging_ elements of the
-   component types.  For example, if [n] is a [Nat] then [inl v] is an
-   element of [Nat+Bool]; similarly, if [b] is a [Bool] then [inr b]
-   is a [Nat+Bool].  The names of the tags [inl] and [inr] arise from
-   thinking of them as functions
+*)
+
+
+
+(** We create elements of these types by _tagging_ elements of
+    the component types.  For example, if [n] is a [Nat] then [inl v]
+    is an element of [Nat+Bool]; similarly, if [b] is a [Bool] then
+    [inr b] is a [Nat+Bool].  The names of the tags [inl] and [inr]
+    arise from thinking of them as functions
 
 <<
    inl : Nat -> Nat + Bool
    inr : Bool -> Nat + Bool
 >>
 
-   that "inject" elements of [Nat] or [Bool] into the left and right
-   components of the sum type [Nat+Bool].  (But note that we don't
-   actually treat them as functions in the way we formalize them:
-   [inl] and [inr] are keywords, and [inl t] and [inr t] are primitive
-   syntactic forms, not function applications.  This allows us to give
-   them their own special typing rules.)
-   
-   In general, the elements of a type [T1 + T2] consist of the
-   elements of [T1] tagged with the token [inl], plus the elements of
-   [T2] tagged with [inr]. *)
+    that "inject" elements of [Nat] or [Bool] into the left and right
+    components of the sum type [Nat+Bool].  (But note that we don't
+    actually treat them as functions in the way we formalize them:
+    [inl] and [inr] are keywords, and [inl t] and [inr t] are primitive
+    syntactic forms, not function applications.  This allows us to give
+    them their own special typing rules.) *)
+
+(** In general, the elements of a type [T1 + T2] consist of the
+    elements of [T1] tagged with the token [inl], plus the elements of
+    [T2] tagged with [inr]. *)
 
 (** One important usage of sums is signaling errors:
 << 
@@ -255,9 +261,9 @@ Require Export Stlc.
     div =
       \x:Nat. \y:Nat.
         if iszero y then
-          inr Nat unit
+          inr unit
         else
-          inl String ...
+          inl ...
 >>
     The type [Nat + Unit] above is in fact isomorphic to [option nat]
     in Coq, and we've already seen how to signal errors with options. *)
@@ -298,8 +304,9 @@ Require Export Stlc.
            | ...
            | T + T             sum type
 >>
+*)
 
-   Evaluation:
+(** Evaluation:
 
                               t1 ==> t1'
                         ----------------------                         (ST_Inl)
@@ -321,8 +328,9 @@ Require Export Stlc.
             ----------------------------------------------         (ST_CaseInr)
             case (inr T v0) of inl x1 => t1 | inr x2 => t2
                            ==>  [x2:=v0]t2
-   
-Typing:
+*)
+
+(** Typing:
                           Gamma |- t1 :  T1
                      ----------------------------                       (T_Inl)
                      Gamma |- inl T2 t1 : T1 + T2
@@ -337,8 +345,8 @@ Typing:
          ---------------------------------------------------           (T_Case)
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
 
-    The reason for the type annotation on the [inl] and [inr] forms
-    has to do with uniqueness of types. *)
+    We use the type annotation in [inl] and [inr] to make the typing
+    simpler, similarly to what we did for functions. *)
 (** Without this extra
     information, the typing rule [T_Inl], for example, would have to
     say that, once we have shown that [t1] is an element of type [T1],
@@ -355,6 +363,8 @@ Typing:
     an injection.  This is rather heavyweight for programmers (and so
     real languages adopt other solutions), but it is easy to
     understand and formalize. *)
+
+
 
 (** ** Lists *)
 
@@ -384,10 +394,7 @@ Typing:
        | a::x' -> lcase x' of nil -> a
                      | b::x'' -> a+b 
 >>
-
-    While we say that [cons v1 v2] is a value, we really mean that
-    [v2] should also be a list -- we'll have to enforce this in the
-    formal definition of value. *)
+*)
 
 (**
     Syntax:
@@ -407,7 +414,9 @@ Typing:
            | ...
            | List T            list of Ts
 >>
-   Reduction:
+*)
+
+(** Reduction:
                                  t1 ==> t1'
                        --------------------------                    (ST_Cons1)
                        cons t1 t2 ==> cons t1' t2
@@ -428,8 +437,9 @@ Typing:
             -----------------------------------------------      (ST_LcaseCons)
             (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3)
                           ==> [xh:=vh,xt:=vt]t3
+*)
 
-   Typing:
+(** Typing:
                           -----------------------                       (T_Nil)
                           Gamma |- nil T : List T
 
@@ -458,9 +468,9 @@ Typing:
    But this would require quite a bit of work to formalize: we'd have
    to introduce a notion of "function definitions" and carry around an
    "environment" of such definitions in the definition of the [step]
-   relation.
+   relation. *)
 
-   Here is another way that is straightforward to formalize: instead
+(** Here is another way that is straightforward to formalize: instead
    of writing recursive definitions where the right-hand side can
    contain the identifier being defined, we can define a _fixed-point
    operator_ that performs the "unfolding" of the recursive definition
@@ -592,7 +602,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 *)
 
 
-(** **** Exercise: 1 star (halve_fix) *)
+(** **** Exercise: 1 star, optional (halve_fix)  *)
 (** Translate this informal recursive definition into one using [fix]:
 <<
    halve = 
@@ -605,7 +615,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 []
 *)
 
-(** **** Exercise: 1 star, recommended (fact_steps) *)
+(** **** Exercise: 1 star, optional (fact_steps)  *)
 (** Write down the sequence of steps that the term [fact 1] goes
     through to reduce to a normal form (assuming the usual reduction
     rules for arithmetic operations).
@@ -660,12 +670,13 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     generalization: they are n-ary products (rather than just binary)
     and their fields are accessed by _label_ (rather than position).
 
-    This extension is conceptually a straightforward generalization of
-    pairs and product types, but notationally it becomes a little
+    Conceptually, this extension is a straightforward generalization
+    of pairs and product types, but notationally it becomes a little
     heavier; for this reason, we postpone its formal treatment to a
-    separate chapter ([Records]). Therefore records are not included
-    in the extended exercise below, but they are used to motivate the
-    [Subtyping] chapter. *)
+    separate chapter ([Records]). *)
+
+(** Records are not included in the extended exercise below, but
+    they will be useful to motivate the [Sub] chapter. *)
 
 (** Syntax:
 <<
@@ -687,12 +698,15 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
    particular, we've written "[...]" in several places to mean "any
    number of these," and we've omitted explicit mention of the usual
    side-condition that the labels of a record should not contain
-   repetitions.  It is possible to devise informal notations that are
+   repetitions. *)
+
+(** It is possible to devise informal notations that are
    more precise, but these tend to be quite heavy and to obscure the
    main points of the definitions.  So we'll leave these a bit loose
    here (they are informal anyway, after all) and do the work of
-   tightening things up elsewhere (in chapter [Records]).
+   tightening things up elsewhere (in chapter [Records]). *)
 
+(**
    Reduction:
                               ti ==> ti'
                  ------------------------------------                  (ST_Rcd)
@@ -709,8 +723,9 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
    is intended to be read "if [ti] is the leftmost field that is not a
    value and if [ti] steps to [ti'], then the whole record steps..."
    In the last rule, the intention is that there should only be one
-   field called i, and that all the other fields must contain values.
+   field called i, and that all the other fields must contain values. *)
 
+(**
    Typing:
             Gamma |- t1 : T1     ...     Gamma |- tn : Tn
           --------------------------------------------------            (T_Rcd)
@@ -851,13 +866,23 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (* ###################################################################### *)
 (** * Exercise: Formalizing the Extensions *)
 
-(** **** Exercise: 4 stars, recommended (STLC_extensions) *)
-(** Formalizing the extensions (not including the optional ones) is
-    left to you.  We've provided the necessary extensions to the
+(** **** Exercise: 4 stars, optional (STLC_extensions)  *)
+(** In this problem you will formalize a couple of the extensions
+    described above.  We've provided the necessary additions to the
     syntax of terms and types, and we've included a few examples that
     you can test your definitions with to make sure they are working
     as expected.  You'll fill in the rest of the definitions and
     extend all the proofs accordingly.
+
+    To get you started, we've provided implementations for:
+     - numbers
+     - pairs and units
+     - sums 
+     - lists
+
+    You need to complete the implementations for:
+     - let (which involves binding)
+     - [fix]
 
     A good strategy is to work on the extensions one at a time, in
     multiple passes, rather than trying to work through the file from
@@ -865,14 +890,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     begin by reading carefully through the parts that are provided for
     you, referring to the text in the [Stlc] chapter for high-level
     intuitions and the embedded comments for detailed mechanics.
-
-    A good order for attempting the extensions is: 
-      - numbers first (since they are both familiar and simple)
-      - products and units
-      - let (which involves binding)
-      - sums (which involve slightly more complex binding)
-      - lists (which involve yet more complex binding)
-      - [fix] *)
+*)
 
 Module STLCExtended.
 
@@ -955,12 +973,48 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
 Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
   match t with
   | tvar y => 
-      if beq_id x y then s else t
+      if eq_id_dec x y then s else t
   | tabs y T t1 => 
-      tabs y T (if beq_id x y then t1 else (subst x s t1))
+      tabs y T (if eq_id_dec x y then t1 else (subst x s t1))
   | tapp t1 t2 => 
       tapp (subst x s t1) (subst x s t2)
+  | tnat n => 
+      tnat n
+  | tsucc t1 => 
+      tsucc (subst x s t1)
+  | tpred t1 => 
+      tpred (subst x s t1)
+  | tmult t1 t2 => 
+      tmult (subst x s t1) (subst x s t2)
+  | tif0 t1 t2 t3 => 
+      tif0 (subst x s t1) (subst x s t2) (subst x s t3)
+  | tpair t1 t2 => 
+      tpair (subst x s t1) (subst x s t2)
+  | tfst t1 => 
+      tfst (subst x s t1)
+  | tsnd t1 => 
+      tsnd (subst x s t1)
+  | tunit => tunit
   (* FILL IN HERE *)
+  | tinl T t1 => 
+      tinl T (subst x s t1)
+  | tinr T t1 => 
+      tinr T (subst x s t1)
+  | tcase t0 y1 t1 y2 t2 => 
+      tcase (subst x s t0) 
+         y1 (if eq_id_dec x y1 then t1 else (subst x s t1))
+         y2 (if eq_id_dec x y2 then t2 else (subst x s t2))
+  | tnil T => 
+      tnil T
+  | tcons t1 t2 => 
+      tcons (subst x s t1) (subst x s t2)
+  | tlcase t1 t2 y1 y2 t3 => 
+      tlcase (subst x s t1) (subst x s t2) y1 y2
+        (if eq_id_dec x y1 then 
+           t3 
+         else if eq_id_dec x y2 then t3 
+              else (subst x s t3))
+(* FILL IN HERE *)
   | _ => t  (* ... and delete this line *) 
   end.
 
@@ -975,7 +1029,29 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 Inductive value : tm -> Prop :=
   | v_abs : forall x T11 t12,
       value (tabs x T11 t12)
-  (* FILL IN HERE *)
+  (* Numbers are values: *)
+  | v_nat : forall n1,
+      value (tnat n1)
+  (* A pair is a value if both components are: *)
+  | v_pair : forall v1 v2,
+      value v1 ->
+      value v2 ->
+      value (tpair v1 v2)
+  (* A unit is always a value *)
+  | v_unit : value tunit
+  (* A tagged value is a value:  *)
+  | v_inl : forall v T,
+      value v -> 
+      value (tinl T v)
+  | v_inr : forall v T,
+      value v -> 
+      value (tinr T v)
+  (* A list is a value iff its head and tail are values: *)
+  | v_lnil : forall T, value (tnil T)
+  | v_lcons : forall v1 vl,
+      value v1 ->
+      value vl ->
+      value (tcons v1 vl)
   .
 
 Hint Constructors value.
@@ -993,14 +1069,112 @@ Inductive step : tm -> tm -> Prop :=
          value v1 ->
          t2 ==> t2' ->
          (tapp v1 t2) ==> (tapp v1 t2')
+  (* nats *)
+  | ST_Succ1 : forall t1 t1',
+       t1 ==> t1' ->
+       (tsucc t1) ==> (tsucc t1')
+  | ST_SuccNat : forall n1,
+       (tsucc (tnat n1)) ==> (tnat (S n1))
+  | ST_Pred : forall t1 t1',
+       t1 ==> t1' ->
+       (tpred t1) ==> (tpred t1')
+  | ST_PredNat : forall n1,
+       (tpred (tnat n1)) ==> (tnat (pred n1))
+  | ST_Mult1 : forall t1 t1' t2,
+       t1 ==> t1' ->
+       (tmult t1 t2) ==> (tmult t1' t2)
+  | ST_Mult2 : forall v1 t2 t2',
+       value v1 ->
+       t2 ==> t2' ->
+       (tmult v1 t2) ==> (tmult v1 t2')
+  | ST_MultNats : forall n1 n2,
+       (tmult (tnat n1) (tnat n2)) ==> (tnat (mult n1 n2))
+  | ST_If01 : forall t1 t1' t2 t3,
+       t1 ==> t1' ->
+       (tif0 t1 t2 t3) ==> (tif0 t1' t2 t3)
+  | ST_If0Zero : forall t2 t3,
+       (tif0 (tnat 0) t2 t3) ==> t2
+  | ST_If0Nonzero : forall n t2 t3,
+       (tif0 (tnat (S n)) t2 t3) ==> t3
+  (* pairs *)
+  | ST_Pair1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        (tpair t1 t2) ==> (tpair t1' t2)
+  | ST_Pair2 : forall v1 t2 t2',
+        value v1 ->
+        t2 ==> t2' ->
+        (tpair v1 t2) ==> (tpair v1 t2')
+  | ST_Fst1 : forall t1 t1',
+        t1 ==> t1' ->
+        (tfst t1) ==> (tfst t1')
+  | ST_FstPair : forall v1 v2,
+        value v1 ->
+        value v2 ->
+        (tfst (tpair v1 v2)) ==> v1
+  | ST_Snd1 : forall t1 t1',
+        t1 ==> t1' ->
+        (tsnd t1) ==> (tsnd t1')
+  | ST_SndPair : forall v1 v2,
+        value v1 ->
+        value v2 ->
+        (tsnd (tpair v1 v2)) ==> v2
+  (* let *)
   (* FILL IN HERE *)
+  (* sums *)
+  | ST_Inl : forall t1 t1' T,
+        t1 ==> t1' ->
+        (tinl T t1) ==> (tinl T t1')
+  | ST_Inr : forall t1 t1' T,
+        t1 ==> t1' ->
+        (tinr T t1) ==> (tinr T t1')
+  | ST_Case : forall t0 t0' x1 t1 x2 t2,
+        t0 ==> t0' ->
+        (tcase t0 x1 t1 x2 t2) ==> (tcase t0' x1 t1 x2 t2)
+  | ST_CaseInl : forall v0 x1 t1 x2 t2 T,
+        value v0 -> 
+        (tcase (tinl T v0) x1 t1 x2 t2) ==> [x1:=v0]t1
+  | ST_CaseInr : forall v0 x1 t1 x2 t2 T,
+        value v0 -> 
+        (tcase (tinr T v0) x1 t1 x2 t2) ==> [x2:=v0]t2
+  (* lists *)
+  | ST_Cons1 : forall t1 t1' t2,
+       t1 ==> t1' ->
+       (tcons t1 t2) ==> (tcons t1' t2)
+  | ST_Cons2 : forall v1 t2 t2',
+       value v1 ->
+       t2 ==> t2' ->
+       (tcons v1 t2) ==> (tcons v1 t2')
+  | ST_Lcase1 : forall t1 t1' t2 x1 x2 t3,
+       t1 ==> t1' ->
+       (tlcase t1 t2 x1 x2 t3) ==> (tlcase t1' t2 x1 x2 t3)
+  | ST_LcaseNil : forall T t2 x1 x2 t3,
+       (tlcase (tnil T) t2 x1 x2 t3) ==> t2
+  | ST_LcaseCons : forall v1 vl t2 x1 x2 t3,
+       value v1  ->
+       value vl  ->
+       (tlcase (tcons v1 vl) t2 x1 x2 t3) ==> (subst x2 vl (subst x1 v1 t3))
+  (* fix *)
+(* FILL IN HERE *)
 
 where "t1 '==>' t2" := (step t1 t2).
 
 Tactic Notation "step_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "ST_AppAbs" | Case_aux c "ST_App1" | Case_aux c "ST_App2"
+  | Case_aux c "ST_Succ1" | Case_aux c "ST_SuccNat"
+    | Case_aux c "ST_Pred1" | Case_aux c "ST_PredNat"
+    | Case_aux c "ST_Mult1" | Case_aux c "ST_Mult2"
+    | Case_aux c "ST_MultNats" | Case_aux c "ST_If01"
+    | Case_aux c "ST_If0Zero" | Case_aux c "ST_If0Nonzero"
+  | Case_aux c "ST_Pair1" | Case_aux c "ST_Pair2"
+    | Case_aux c "ST_Fst1" | Case_aux c "ST_FstPair"
+    | Case_aux c "ST_Snd1" | Case_aux c "ST_SndPair"
     (* FILL IN HERE *)
+  | Case_aux c "ST_Inl" | Case_aux c "ST_Inr" | Case_aux c "ST_Case"
+    | Case_aux c "ST_CaseInl" | Case_aux c "ST_CaseInr"
+  | Case_aux c "ST_Cons1" | Case_aux c "ST_Cons2" | Case_aux c "ST_Lcase1"
+    | Case_aux c "ST_LcaseNil" | Case_aux c "ST_LcaseCons"
+(* FILL IN HERE *)
   ].
 
 Notation multistep := (multi step).
@@ -1016,27 +1190,98 @@ Definition context := partial_map ty.
 (** Next we define the typing rules.  These are nearly direct
     transcriptions of the inference rules shown above. *)
 
+Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
+
 Inductive has_type : context -> tm -> ty -> Prop :=
   (* Typing rules for proper terms *)
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
-      has_type Gamma (tvar x) T
+      Gamma |- (tvar x) \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      has_type (extend Gamma x T11) t12 T12 -> 
-      has_type Gamma (tabs x T11 t12) (TArrow T11 T12)
+      (extend Gamma x T11) |- t12 \in T12 -> 
+      Gamma |- (tabs x T11 t12) \in (TArrow T11 T12)
   | T_App : forall T1 T2 Gamma t1 t2,
-      has_type Gamma t1 (TArrow T1 T2) -> 
-      has_type Gamma t2 T1 -> 
-      has_type Gamma (tapp t1 t2) T2
-  (* FILL IN HERE *)
-  .
+      Gamma |- t1 \in (TArrow T1 T2) -> 
+      Gamma |- t2 \in T1 -> 
+      Gamma |- (tapp t1 t2) \in T2
+  (* nats *)
+  | T_Nat : forall Gamma n1,
+      Gamma |- (tnat n1) \in TNat
+  | T_Succ : forall Gamma t1,
+      Gamma |- t1 \in TNat ->
+      Gamma |- (tsucc t1) \in TNat
+  | T_Pred : forall Gamma t1,
+      Gamma |- t1 \in TNat ->
+      Gamma |- (tpred t1) \in TNat
+  | T_Mult : forall Gamma t1 t2,
+      Gamma |- t1 \in TNat ->
+      Gamma |- t2 \in TNat ->
+      Gamma |- (tmult t1 t2) \in TNat
+  | T_If0 : forall Gamma t1 t2 t3 T1,
+      Gamma |- t1 \in TNat ->
+      Gamma |- t2 \in T1 ->
+      Gamma |- t3 \in T1 ->
+      Gamma |- (tif0 t1 t2 t3) \in T1
+  (* pairs *)
+  | T_Pair : forall Gamma t1 t2 T1 T2,
+      Gamma |- t1 \in T1 ->
+      Gamma |- t2 \in T2 ->
+      Gamma |- (tpair t1 t2) \in (TProd T1 T2)
+  | T_Fst : forall Gamma t T1 T2,
+      Gamma |- t \in (TProd T1 T2) ->
+      Gamma |- (tfst t) \in T1
+  | T_Snd : forall Gamma t T1 T2,
+      Gamma |- t \in (TProd T1 T2) ->
+      Gamma |- (tsnd t) \in T2
+  (* unit *)
+  | T_Unit : forall Gamma,
+      Gamma |- tunit \in TUnit
+  (* let *)
+(* FILL IN HERE *)
+  (* sums *)
+  | T_Inl : forall Gamma t1 T1 T2,
+      Gamma |- t1 \in T1 ->
+      Gamma |- (tinl T2 t1) \in (TSum T1 T2)
+  | T_Inr : forall Gamma t2 T1 T2,
+      Gamma |- t2 \in T2 ->
+      Gamma |- (tinr T1 t2) \in (TSum T1 T2)
+  | T_Case : forall Gamma t0 x1 T1 t1 x2 T2 t2 T,
+      Gamma |- t0 \in (TSum T1 T2) -> 
+      (extend Gamma x1 T1) |- t1 \in T ->
+      (extend Gamma x2 T2) |- t2 \in T -> 
+      Gamma |- (tcase t0 x1 t1 x2 t2) \in T
+  (* lists *)
+  | T_Nil : forall Gamma T,
+      Gamma |- (tnil T) \in (TList T)
+  | T_Cons : forall Gamma t1 t2 T1,
+      Gamma |- t1 \in T1 ->
+      Gamma |- t2 \in (TList T1) ->
+      Gamma |- (tcons t1 t2) \in (TList T1)
+  | T_Lcase : forall Gamma t1 T1 t2 x1 x2 t3 T2,
+      Gamma |- t1 \in (TList T1) ->
+      Gamma |- t2 \in T2 ->
+      (extend (extend Gamma x2 (TList T1)) x1 T1) |- t3 \in T2 ->
+      Gamma |- (tlcase t1 t2 x1 x2 t3) \in T2
+  (* fix *)
+(* FILL IN HERE *)
+
+where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
 Tactic Notation "has_type_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "T_Var" | Case_aux c "T_Abs" | Case_aux c "T_App" 
-    (* FILL IN HERE *)
+  | Case_aux c "T_Nat" | Case_aux c "T_Succ" | Case_aux c "T_Pred"
+  | Case_aux c "T_Mult" | Case_aux c "T_If0"
+  | Case_aux c "T_Pair" | Case_aux c "T_Fst" | Case_aux c "T_Snd"
+  | Case_aux c "T_Unit" 
+(* let *)
+(* FILL IN HERE *)
+  | Case_aux c "T_Inl" | Case_aux c "T_Inr" | Case_aux c "T_Case"
+  | Case_aux c "T_Nil" | Case_aux c "T_Cons" | Case_aux c "T_Lcase" 
+(* fix *)
+(* FILL IN HERE *)
 ].
 
 (* ###################################################################### *)
@@ -1082,7 +1327,7 @@ Notation eo := (Id 18).
     [auto].
 
     The following [Hint] declarations say that, whenever [auto]
-    arrives at a goal of the form [(has_type G (tapp e1 e1) T)], it
+    arrives at a goal of the form [(Gamma |- (tapp e1 e1) \in T)], it
     should consider [eapply T_App], leaving an existential variable
     for the middle type T1, and similar for [lcase]. That variable
     will then be filled in during the search for type derivations for
@@ -1122,7 +1367,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test TNat.
+  (@empty ty) |- test \in TNat.
 Proof.
   unfold test.
   (* This typing derivation is quite deep, so we need to increase the
@@ -1155,7 +1400,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test TNat.
+  (@empty ty) |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -1178,7 +1423,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test TNat.
+  (@empty ty) |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -1203,7 +1448,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test TNat.
+  (@empty ty) |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -1235,7 +1480,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test (TProd TNat TNat).
+  (@empty ty) |- test \in (TProd TNat TNat).
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -1263,7 +1508,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  has_type (@empty ty) test TNat.
+  (@empty ty) |- test \in TNat.
 Proof. unfold test. eauto 20. Qed.
 
 Example reduces :
@@ -1297,7 +1542,7 @@ Definition fact :=
 
 (* 
 Example fact_typechecks :
-  has_type (@empty ty) fact (TArrow TNat TNat).
+  (@empty ty) |- fact \in (TArrow TNat TNat).
 Proof. unfold fact. auto 10. 
 Qed.
 *)
@@ -1333,7 +1578,7 @@ Definition map :=
 (* 
 (* Make sure you've uncommented the last [Hint Extern] above... *)
 Example map_typechecks :
-  has_type empty map 
+  empty |- map \in 
     (TArrow (TArrow TNat TNat)
       (TArrow (TList TNat) 
         (TList TNat))).
@@ -1373,7 +1618,7 @@ Definition equal :=
 
 (* 
 Example equal_typechecks :
-  has_type (@empty ty) equal (TArrow TNat (TArrow TNat TNat)).
+  (@empty ty) |- equal \in (TArrow TNat (TArrow TNat TNat)).
 Proof. unfold equal. auto 10. 
 Qed.
 *)
@@ -1426,7 +1671,7 @@ Definition eotest :=
 
 (* 
 Example eotest_typechecks :
-  has_type (@empty ty) eotest (TProd TNat TNat).
+  (@empty ty) |- eotest \in (TProd TNat TNat).
 Proof. unfold eotest. eauto 30. 
 Qed.
 *)
@@ -1452,7 +1697,7 @@ End Examples.
 (** *** Progress *)
 
 Theorem progress : forall t T, 
-     has_type empty t T ->
+     empty |- t \in T ->
      value t \/ exists t', t ==> t'. 
 Proof with eauto.
   (* Theorem: Suppose empty |- t : T.  Then either
@@ -1497,7 +1742,134 @@ Proof with eauto.
     SCase "t1 steps".
       (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2] by [ST_App1]. *)
       inversion H as [t1' Hstp]. exists (tapp t1' t2)...
-  (* FILL IN HERE *)
+  Case "T_Nat".
+    left...
+  Case "T_Succ".
+    right.
+    destruct IHHt...
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      exists (tnat (S n1))...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tsucc t1')...
+  Case "T_Pred".
+    right.
+    destruct IHHt...
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      exists (tnat (pred n1))...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tpred t1')...
+  Case "T_Mult".
+    right.
+    destruct IHHt1...
+    SCase "t1 is a value".
+      destruct IHHt2...
+      SSCase "t2 is a value".
+        inversion H; subst; try solve by inversion.
+        inversion H0; subst; try solve by inversion.
+        exists (tnat (mult n1 n0))...
+      SSCase "t2 steps".
+        inversion H0 as [t2' Hstp].
+        exists (tmult t1 t2')...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tmult t1' t2)...
+  Case "T_If0".
+    right.
+    destruct IHHt1...
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      destruct n1 as [|n1'].
+      SSCase "n1=0".
+        exists t2...
+      SSCase "n1<>0".
+        exists t3...
+    SCase "t1 steps".
+      inversion H as [t1' H0].
+      exists (tif0 t1' t2 t3)...
+  Case "T_Pair".
+    destruct IHHt1...
+    SCase "t1 is a value".
+      destruct IHHt2...
+      SSCase "t2 steps".
+        right.  inversion H0 as [t2' Hstp].
+        exists (tpair t1 t2')...
+    SCase "t1 steps".
+      right. inversion H as [t1' Hstp].
+      exists (tpair t1' t2)...
+  Case "T_Fst".
+    right.
+    destruct IHHt...
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      exists v1...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tfst t1')...
+  Case "T_Snd".
+    right.
+    destruct IHHt...
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      exists v2...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tsnd t1')...
+  Case "T_Unit".
+    left...
+(* let *)
+(* FILL IN HERE *)
+  Case "T_Inl".
+    destruct IHHt... 
+    SCase "t1 steps". 
+      right. inversion H as [t1' Hstp]... 
+      (* exists (tinl _ t1')... *)
+  Case "T_Inr".
+    destruct IHHt... 
+    SCase "t1 steps". 
+      right. inversion H as [t1' Hstp]... 
+      (* exists (tinr _ t1')... *)
+  Case "T_Case".
+    right. 
+    destruct IHHt1...
+    SCase "t0 is a value".
+      inversion H; subst; try solve by inversion.
+      SSCase "t0 is inl".
+        exists ([x1:=v]t1)...  
+      SSCase "t0 is inr".        
+        exists ([x2:=v]t2)...
+    SCase "t0 steps".
+      inversion H as [t0' Hstp]. 
+      exists (tcase t0' x1 t1 x2 t2)...
+  Case "T_Nil".
+    left...
+  Case "T_Cons".
+    destruct IHHt1...
+    SCase "head is a value".
+      destruct IHHt2...
+      SSCase "tail steps".
+        right. inversion H0 as [t2' Hstp].
+        exists (tcons t1 t2')...
+    SCase "head steps".
+      right. inversion H as [t1' Hstp].
+      exists (tcons t1' t2)...
+  Case "T_Lcase".
+    right.
+    destruct IHHt1... 
+    SCase "t1 is a value".
+      inversion H; subst; try solve by inversion.
+      SSCase "t1=tnil".
+        exists t2...
+      SSCase "t1=tcons v1 vl".
+        exists ([x2:=vl]([x1:=v1]t3))...
+    SCase "t1 steps".
+      inversion H as [t1' Hstp].
+      exists (tlcase t1' t2 x1 x2 t3)...
+(* fix *)
+(* FILL IN HERE *)
 Qed.
 
 (* ###################################################################### *)
@@ -1514,15 +1886,89 @@ Inductive appears_free_in : id -> tm -> Prop :=
         y <> x  ->
         appears_free_in x t12 ->
         appears_free_in x (tabs y T11 t12)
-  (* FILL IN HERE *)
+  (* nats *)
+  | afi_succ : forall x t,
+     appears_free_in x t ->
+     appears_free_in x (tsucc t)
+  | afi_pred : forall x t,
+     appears_free_in x t -> 
+     appears_free_in x (tpred t)
+  | afi_mult1 : forall x t1 t2,
+     appears_free_in x t1 -> 
+     appears_free_in x (tmult t1 t2)
+  | afi_mult2 : forall x t1 t2,
+     appears_free_in x t2 -> 
+     appears_free_in x (tmult t1 t2)
+  | afi_if01 : forall x t1 t2 t3,
+     appears_free_in x t1 -> 
+     appears_free_in x (tif0 t1 t2 t3)
+  | afi_if02 : forall x t1 t2 t3,
+     appears_free_in x t2 -> 
+     appears_free_in x (tif0 t1 t2 t3)
+  | afi_if03 : forall x t1 t2 t3,
+     appears_free_in x t3 -> 
+     appears_free_in x (tif0 t1 t2 t3)
+  (* pairs *)
+  | afi_pair1 : forall x t1 t2,
+      appears_free_in x t1 ->
+      appears_free_in x (tpair t1 t2)
+  | afi_pair2 : forall x t1 t2,
+      appears_free_in x t2 ->
+      appears_free_in x (tpair t1 t2)
+  | afi_fst : forall x t,
+      appears_free_in x t ->
+      appears_free_in x (tfst t)
+  | afi_snd : forall x t,
+      appears_free_in x t ->
+      appears_free_in x (tsnd t)
+  (* let *)
+(* FILL IN HERE *)
+  (* sums *)
+  | afi_inl : forall x t T,
+      appears_free_in x t ->
+      appears_free_in x (tinl T t)
+  | afi_inr : forall x t T,
+      appears_free_in x t ->
+      appears_free_in x (tinr T t)
+  | afi_case0 : forall x t0 x1 t1 x2 t2,
+      appears_free_in x t0 ->
+      appears_free_in x (tcase t0 x1 t1 x2 t2)
+  | afi_case1 : forall x t0 x1 t1 x2 t2,
+      x1 <> x -> 
+      appears_free_in x t1 ->
+      appears_free_in x (tcase t0 x1 t1 x2 t2)
+  | afi_case2 : forall x t0 x1 t1 x2 t2,
+      x2 <> x -> 
+      appears_free_in x t2 ->
+      appears_free_in x (tcase t0 x1 t1 x2 t2)
+  (* lists *)
+  | afi_cons1 : forall x t1 t2,
+     appears_free_in x t1 ->
+     appears_free_in x (tcons t1 t2)
+  | afi_cons2 : forall x t1 t2,
+     appears_free_in x t2 ->
+     appears_free_in x (tcons t1 t2)
+  | afi_lcase1 : forall x t1 t2 y1 y2 t3,
+     appears_free_in x t1 ->
+     appears_free_in x (tlcase t1 t2 y1 y2 t3)
+  | afi_lcase2 : forall x t1 t2 y1 y2 t3,
+     appears_free_in x t2 ->
+     appears_free_in x (tlcase t1 t2 y1 y2 t3)
+  | afi_lcase3 : forall x t1 t2 y1 y2 t3,
+     y1 <> x ->
+     y2 <> x ->
+     appears_free_in x t3 ->
+     appears_free_in x (tlcase t1 t2 y1 y2 t3)
+  (* fix *)
+(* FILL IN HERE *)
   .
 
 Hint Constructors appears_free_in.
 
 Lemma context_invariance : forall Gamma Gamma' t S,
-     has_type Gamma t S  ->
+     Gamma |- t \in S  ->
      (forall x, appears_free_in x t -> Gamma x = Gamma' x)  ->
-     has_type Gamma' t S.
+     Gamma' |- t \in S.
 Proof with eauto.
   intros. generalize dependent Gamma'.
   has_type_cases (induction H) Case; 
@@ -1531,14 +1977,36 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   Case "T_Abs".
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold extend. remember (beq_id x y) as e.
-    destruct e...
-  (* FILL IN HERE *)
+    unfold extend. 
+    destruct (eq_id_dec x y)...
+  Case "T_Mult".
+    apply T_Mult...
+  Case "T_If0".
+    apply T_If0...
+  Case "T_Pair". 
+    apply T_Pair...
+(* let *)
+(* FILL IN HERE *)
+  Case "T_Case".
+    eapply T_Case... 
+     apply IHhas_type2. intros y Hafi.
+       unfold extend.
+       destruct (eq_id_dec x1 y)... 
+     apply IHhas_type3. intros y Hafi.
+       unfold extend.
+       destruct (eq_id_dec x2 y)...
+  Case "T_Cons".
+    apply T_Cons...
+  Case "T_Lcase".
+    eapply T_Lcase... apply IHhas_type3. intros y Hafi.
+    unfold extend. 
+    destruct (eq_id_dec x1 y)...
+    destruct (eq_id_dec x2 y)...
 Qed.
 
 Lemma free_in_context : forall x t T Gamma,
    appears_free_in x t ->
-   has_type Gamma t T ->
+   Gamma |- t \in T ->
    exists T', Gamma x = Some T'.
 Proof with eauto.
   intros x t T Gamma Hafi Htyp.
@@ -1546,17 +2014,32 @@ Proof with eauto.
   Case "T_Abs".
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold extend in Hctx. 
-    apply not_eq_beq_id_false in H2. rewrite H2 in Hctx...
-  (* FILL IN HERE *)
+    rewrite neq_id in Hctx...
+(* let *)
+(* FILL IN HERE *)
+  Case "T_Case".
+    SCase "left".
+      destruct IHHtyp2 as [T' Hctx]... exists T'. 
+      unfold extend in Hctx. 
+      rewrite neq_id in Hctx...
+    SCase "right".
+      destruct IHHtyp3 as [T' Hctx]... exists T'. 
+      unfold extend in Hctx. 
+      rewrite neq_id in Hctx...
+  Case "T_Lcase".
+    clear Htyp1 IHHtyp1 Htyp2 IHHtyp2.
+    destruct IHHtyp3 as [T' Hctx]... exists T'.
+    unfold extend in Hctx.
+    rewrite neq_id in Hctx... rewrite neq_id in Hctx... 
 Qed.
 
 (* ###################################################################### *)
 (** *** Substitution *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
-     has_type (extend Gamma x U) t S  ->
-     has_type empty v U   ->
-     has_type Gamma ([x:=v]t) S.
+     (extend Gamma x U) |- t \in S  ->
+     empty |- v \in U   ->
+     Gamma |- ([x:=v]t) \in S.
 Proof with eauto.
   (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then 
      Gamma |- [x:=v]t : S. *)
@@ -1577,14 +2060,14 @@ Proof with eauto.
        show that [Gamma |- [x:=v]y : S].
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
-    remember (beq_id x y) as e. destruct e.
+    destruct (eq_id_dec x y).
     SCase "x=y".
     (* If [x = y], then we know that [U = S], and that [[x:=v]y = v].
        So what we really must show is that if [empty |- v : U] then
        [Gamma |- v : U].  We have already proven a more general version
        of this theorem, called context invariance. *)
-      apply beq_id_eq in Heqe. subst.
-      unfold extend in H1. rewrite <- beq_id_refl in H1. 
+      subst.
+      unfold extend in H1. rewrite eq_id in H1. 
       inversion H1; subst. clear H1.
       eapply context_invariance...
       intros x Hcontra.
@@ -1593,7 +2076,7 @@ Proof with eauto.
     SCase "x<>y".
     (* If [x <> y], then [Gamma y = Some S] and the substitution has no
        effect.  We can show that [Gamma |- y : S] by [T_Var]. *)
-      apply T_Var... unfold extend in H1. rewrite <- Heqe in H1...
+      apply T_Var... unfold extend in H1. rewrite neq_id in H1...
   Case "tabs".
     rename i into y. rename t into T11.
     (* If [t = tabs y T11 t0], then we know that
@@ -1611,16 +2094,16 @@ Proof with eauto.
        We consider two cases: [x = y] and [x <> y].
     *)
     apply T_Abs...
-    remember (beq_id x y) as e. destruct e.
+    destruct (eq_id_dec x y).
     SCase "x=y".
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
        equivalent.  Since the former context shows that [t0 : T12], so
        does the latter. *)
       eapply context_invariance...
-      apply beq_id_eq in Heqe. subst.
+      subst.
       intros x Hafi. unfold extend.
-      destruct (beq_id y x)...
+      destruct (eq_id_dec y x)...
     SCase "x<>y".
     (* If [x <> y], then the IH and context invariance allow us to show that
          [Gamma,x:U,y:T11 |- t0 : T12]       =>
@@ -1628,19 +2111,70 @@ Proof with eauto.
          [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold extend.
-      remember (beq_id y z) as e0. destruct e0...
-      apply beq_id_eq in Heqe0. subst.
-      rewrite <- Heqe...
-  (* FILL IN HERE *)
+      destruct (eq_id_dec y z)...
+      subst. rewrite neq_id...
+(* let *)
+(* FILL IN HERE *)
+  Case "tcase".
+    rename i into x1. rename i0 into x2.
+    eapply T_Case...
+      SCase "left arm".
+       destruct (eq_id_dec x x1).
+       SSCase "x = x1".
+        eapply context_invariance...
+        subst.
+        intros z Hafi. unfold extend.
+        destruct (eq_id_dec x1 z)...
+       SSCase "x <> x1". 
+         apply IHt2. eapply context_invariance...
+         intros z Hafi.  unfold extend.
+         destruct (eq_id_dec x1 z)...
+           subst. rewrite neq_id...
+      SCase "right arm".
+       destruct (eq_id_dec x x2).
+       SSCase "x = x2".
+        eapply context_invariance...
+        subst.
+        intros z Hafi. unfold extend.
+        destruct (eq_id_dec x2 z)...
+       SSCase "x <> x2". 
+         apply IHt3. eapply context_invariance...
+         intros z Hafi.  unfold extend.
+         destruct (eq_id_dec x2 z)...
+           subst. rewrite neq_id...
+  Case "tlcase".
+    rename i into y1. rename i0 into y2.
+    eapply T_Lcase... 
+    destruct (eq_id_dec x y1).
+    SCase "x=y1".
+      simpl.  
+      eapply context_invariance...
+      subst.
+      intros z Hafi. unfold extend.
+      destruct (eq_id_dec y1 z)... 
+    SCase "x<>y1".
+      destruct (eq_id_dec x y2).
+      SSCase "x=y2".
+        eapply context_invariance...
+        subst. 
+        intros z Hafi. unfold extend.
+        destruct (eq_id_dec y2 z)...
+      SSCase "x<>y2".
+        apply IHt3. eapply context_invariance...
+        intros z Hafi. unfold extend.
+        destruct (eq_id_dec y1 z)...
+        subst. rewrite neq_id... 
+        destruct (eq_id_dec y2 z)...
+        subst. rewrite neq_id... 
 Qed.
 
 (* ###################################################################### *)
 (** *** Preservation *)
 
 Theorem preservation : forall t t' T,
-     has_type empty t T  ->
+     empty |- t \in T  ->
      t ==> t'  ->
-     has_type empty t' T.
+     empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
   (* Theorem: If [empty |- t : T] and [t ==> t'], then [empty |- t' : T]. *)
@@ -1671,8 +2205,31 @@ Proof with eauto.
          by assumption, so we are done. *)
       apply substitution_preserves_typing with T1...
       inversion HT1...
-  (* FILL IN HERE *)
+  Case "T_Fst".
+    inversion HT...
+  Case "T_Snd".
+    inversion HT...
+(* let *)
+(* FILL IN HERE *)
+  Case "T_Case".
+    SCase "ST_CaseInl".
+      inversion HT1; subst. 
+      eapply substitution_preserves_typing...
+    SCase "ST_CaseInr".
+      inversion HT1; subst. 
+      eapply substitution_preserves_typing...
+  Case "T_Lcase".
+    SCase "ST_LcaseCons".
+      inversion HT1; subst.
+      apply substitution_preserves_typing with (TList T1)...
+      apply substitution_preserves_typing with T1...
+(* fix *)
+(* FILL IN HERE *)
 Qed.
 (** [] *)
 
 End STLCExtended.
+
+(* $Date: 2014-12-01 15:15:02 -0500 (Mon, 01 Dec 2014) $ *)
+
+

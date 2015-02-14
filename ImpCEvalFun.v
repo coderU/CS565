@@ -1,9 +1,7 @@
 (** * ImpCEvalFun: Evaluation Function for Imp *)
 
-(* $Date: 2012-02-22 04:00:00 -0500 (Wed, 22 Feb 2012) $ *)
-
 (* #################################### *)
-(** ** Evaluation Function *)
+(** * Evaluation Function *)
 
 Require Import Imp.
 
@@ -16,7 +14,7 @@ Fixpoint ceval_step1 (st : state) (c : com) : state :=
         st
     | l ::= a1 => 
         update st l (aeval st a1)
-    | c1 ; c2 => 
+    | c1 ;; c2 => 
         let st' := ceval_step1 st c1 in
         ceval_step1 st' c2
     | IFB b THEN c1 ELSE c2 FI => 
@@ -32,7 +30,7 @@ Fixpoint ceval_step1 (st : state) (c : com) : state :=
 <<
     | WHILE b1 DO c1 END => 
         if (beval st b1) 
-          then ceval_step1 st (c1; WHILE b1 DO c1 END)
+          then ceval_step1 st (c1;; WHILE b1 DO c1 END)
           else st 
 >>
     Coq doesn't accept such a definition ([Error: Cannot guess
@@ -68,7 +66,7 @@ Fixpoint ceval_step2 (st : state) (c : com) (i : nat) : state :=
           st
       | l ::= a1 => 
           update st l (aeval st a1)
-      | c1 ; c2 => 
+      | c1 ;; c2 => 
           let st' := ceval_step2 st c1 i' in
           ceval_step2 st' c2 i' 
       | IFB b THEN c1 ELSE c2 FI => 
@@ -105,7 +103,7 @@ Fixpoint ceval_step3 (st : state) (c : com) (i : nat)
           Some st
       | l ::= a1 => 
           Some (update st l (aeval st a1))
-      | c1 ; c2 => 
+      | c1 ;; c2 => 
           match (ceval_step3 st c1 i') with
           | Some st' => ceval_step3 st' c2 i'
           | None => None
@@ -145,7 +143,7 @@ Fixpoint ceval_step (st : state) (c : com) (i : nat)
           Some st
       | l ::= a1 => 
           Some (update st l (aeval st a1))
-      | c1 ; c2 => 
+      | c1 ;; c2 => 
           LETOPT st' <== ceval_step st c1 i' IN
           ceval_step st' c2 i'
       | IFB b THEN c1 ELSE c2 FI => 
@@ -168,7 +166,7 @@ Definition test_ceval (st:state) (c:com) :=
 
 (* Eval compute in 
      (test_ceval empty_state 
-         (X ::= ANum 2; 
+         (X ::= ANum 2;;
           IFB BLe (AId X) (ANum 1)
             THEN Y ::= ANum 3 
             ELSE Z ::= ANum 4
@@ -176,7 +174,7 @@ Definition test_ceval (st:state) (c:com) :=
    ====>
       Some (2, 0, 4)   *)
 
-(** **** Exercise: 2 stars, recommended (pup_to_n) *)
+(** **** Exercise: 2 stars (pup_to_n)  *)
 (** Write an Imp program that sums the numbers from [1] to
    [X] (inclusive: [1 + 2 + ... + X]) in the variable [Y].  Make sure
    your solution satisfies the test that follows. *)
@@ -192,7 +190,7 @@ Proof. reflexivity. Qed.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (peven) *)
+(** **** Exercise: 2 stars, optional (peven)  *)
 (** Write a [While] program that sets [Z] to [0] if [X] is even and
     sets [Z] to [1] otherwise.  Use [ceval_test] to test your
     program. *)
@@ -201,7 +199,7 @@ Proof. reflexivity. Qed.
 (** [] *)
 
 (* ################################################################ *)
-(** ** Equivalence of Relational and Step-Indexed Evaluation *)
+(** * Equivalence of Relational and Step-Indexed Evaluation *)
 
 (** As with arithmetic and boolean expressions, we'd hope that
     the two alternative definitions of evaluation actually boil down
@@ -231,8 +229,8 @@ Proof.
       SCase "SKIP". apply E_Skip.
       SCase "::=". apply E_Ass. reflexivity.
 
-      SCase ";".
-        remember (ceval_step st c1 i') as r1. destruct r1.
+      SCase ";;".
+        destruct (ceval_step st c1 i') eqn:Heqr1. 
         SSCase "Evaluation of r1 terminates normally".
           apply E_Seq with s. 
             apply IHi'. rewrite Heqr1. reflexivity.
@@ -241,7 +239,7 @@ Proof.
           inversion H1.
 
       SCase "IFB". 
-        remember (beval st b) as r. destruct r.
+        destruct (beval st b) eqn:Heqr.
         SSCase "r = true".
           apply E_IfTrue. rewrite Heqr. reflexivity.
           apply IHi'. assumption.
@@ -249,9 +247,9 @@ Proof.
           apply E_IfFalse. rewrite Heqr. reflexivity.
           apply IHi'. assumption.
 
-      SCase "WHILE". remember (beval st b) as r. destruct r.
+      SCase "WHILE". destruct (beval st b) eqn :Heqr.
         SSCase "r = true". 
-          remember (ceval_step st c i') as r1. destruct r1. 
+         destruct (ceval_step st c i') eqn:Heqr1.
           SSSCase "r1 = Some s".
             apply E_WhileLoop with s. rewrite Heqr. reflexivity.
             apply IHi'. rewrite Heqr1. reflexivity. 
@@ -261,9 +259,9 @@ Proof.
         SSCase "r = false".
           inversion H1. 
           apply E_WhileEnd. 
-          rewrite Heqr. subst. reflexivity.  Qed.
+          rewrite <- Heqr. subst. reflexivity.  Qed.
 
-(** **** Exercise: 4 stars (ceval_step__ceval_inf) *)
+(** **** Exercise: 4 stars (ceval_step__ceval_inf)  *)
 (** Write an informal proof of [ceval_step__ceval], following the
     usual template.  (The template for case analysis on an inductively
     defined value should look the same as for induction, except that
@@ -293,12 +291,10 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
     SCase "::=".
       simpl in Hceval. inversion Hceval.
       reflexivity.
-    SCase ";".
+    SCase ";;".
       simpl in Hceval. simpl. 
-      remember (ceval_step st c1 i1') as st1'o.
-      destruct st1'o.
+      destruct (ceval_step st c1 i1') eqn:Heqst1'o.
       SSCase "st1'o = Some".
-        symmetry in Heqst1'o.
         apply (IHi1' i2') in Heqst1'o; try assumption.
         rewrite Heqst1'o. simpl. simpl in Hceval.
         apply (IHi1' i2') in Hceval; try assumption.
@@ -307,23 +303,20 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
 
     SCase "IFB".
       simpl in Hceval. simpl.
-      remember (beval st b) as bval.
-      destruct bval; apply (IHi1' i2') in Hceval; assumption.
+      destruct (beval st b); apply (IHi1' i2') in Hceval; assumption.
     
     SCase "WHILE".
       simpl in Hceval. simpl.
       destruct (beval st b); try assumption. 
-      remember (ceval_step st c i1') as st1'o.
-      destruct st1'o.
+      destruct (ceval_step st c i1') eqn: Heqst1'o.
       SSCase "st1'o = Some".
-        symmetry in Heqst1'o.
         apply (IHi1' i2') in Heqst1'o; try assumption. 
         rewrite -> Heqst1'o. simpl. simpl in Hceval. 
         apply (IHi1' i2') in Hceval; try assumption.
       SSCase "i1'o = None".
         simpl in Hceval. inversion Hceval.  Qed.
 
-(** **** Exercise: 3 stars, recommended (ceval__ceval_step) *)
+(** **** Exercise: 3 stars (ceval__ceval_step)  *)
 (** Finish the following proof.  You'll need [ceval_step_more] in a
     few places, as well as some basic facts about [<=] and [plus]. *)
 
@@ -345,7 +338,7 @@ Proof.
 Qed.
 
 (* ####################################################### *)
-(** ** Determinism of Evaluation (Simpler Proof) *)
+(** * Determinism of Evaluation (Simpler Proof) *)
 
 (** Here's a slicker proof showing that the evaluation relation is
     deterministic, using the fact that the relational and step-indexed
@@ -365,3 +358,6 @@ Proof.
   apply ceval_step_more with (i2 := i1 + i2) in E2.
   rewrite E1 in E2. inversion E2. reflexivity. 
   omega. omega.  Qed.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
+

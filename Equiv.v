@@ -1,27 +1,27 @@
 (** * Equiv: Program Equivalence *)
 
-(* $Date: 2012-04-06 13:32:51 -1000 (Fri, 06 Apr 2012) $ *)
 
 
 Require Export Imp.
 
-(** *** Some general advice for working on problems
+(** *** Some general advice for working on exercises:
 
-    - We've tried to make sure that most of the Coq proofs we ask you
-      to do are similar to proofs that we've provided.  Before
-      starting to work on the homework problems, take the time to work
-      through our proofs (both informally, on paper, and in Coq) and
-      make sure you understand them in detail.  This will save you a
-      lot of time.
+    - Most of the Coq proofs we ask you to do are similar to proofs
+      that we've provided.  Before starting to work on the homework
+      problems, take the time to work through our proofs (both
+      informally, on paper, and in Coq) and make sure you understand
+      them in detail.  This will save you a lot of time.
 
     - The Coq proofs we're doing now are sufficiently complicated that
-      it is more or less impossible to complete them simply by
-      "following your nose" or random hacking.  You need to start with
-      an idea about why the property is true and how the proof is
+      it is more or less impossible to complete them simply by random
+      experimentation or "following your nose."  You need to start
+      with an idea about why the property is true and how the proof is
       going to go.  The best way to do this is to write out at least a
       sketch of an informal proof on paper -- one that intuitively
       convinces you of the truth of the theorem -- before starting to
-      work on the formal one.
+      work on the formal one.  Alternately, grab a friend and try to
+      convince them that the theorem is true; then try to formalize
+      your explanation.
 
     - Use automation to save work!  Some of the proofs in this
       chapter's exercises are pretty long if you try to write out all
@@ -73,92 +73,75 @@ Definition cequiv (c1 c2 : com) : Prop :=
   forall (st st' : state), 
     (c1 / st || st') <-> (c2 / st || st').
 
-(** **** Exercise: 2 stars, optional (pairs_equiv) *)
-(** Which of the following pairs of programs are equivalent? Write
-    "yes" or "no" for each one.
 
-(a)
-    WHILE (BLe (ANum 1) (AId X)) DO 
-      X ::= APlus (AId X) (ANum 1) 
-    END
-    and
-    WHILE (BLe (ANum 2) (AId X)) DO 
-      X ::= APlus (AId X) (ANum 1) 
-    END
-(* FILL IN HERE *)
 
-(b) 
-    WHILE BTrue DO 
-      WHILE BFalse DO X ::= APlus (AId X) (ANum 1) END 
-    END
-and
-    WHILE BFalse DO 
-      WHILE BTrue DO X ::= APlus (AId X) (ANum 1) END 
-    END
-
-(* FILL IN HERE *)
- [] *)
-
-(** **** Exercise: 3 stars (equiv_classes) *)
+(** **** Exercise: 2 stars (equiv_classes)  *)
 
 (** Given the following programs, group together those that are
-    equivalent in [Imp].  For example, if you think programs (a)
-    through (h) are all equivalent to each other, but not to (i), your
-    answer should look like this: {a,b,c,d,e,f,g,h} {i}.
+    equivalent in [Imp]. Your answer should be given as a list of
+    lists, where each sub-list represents a group of equivalent
+    programs. For example, if you think programs (a) through (h) are
+    all equivalent to each other, but not to (i), your answer should
+    look like this:
 
-(a)
-    WHILE X > 0 DO
-      X ::= X + 1
-    END
+    [ [prog_a;prog_b;prog_c;prog_d;prog_e;prog_f;prog_g;prog_h] ;
+      [prog_i] ]
 
-(b)
-    IFB X = 0 THEN
-      X ::= X + 1;
-      Y ::= 1
-    ELSE
-      Y ::= 0
-    FI;
-    X ::= X - Y;
-    Y ::= 0
+    Write down your answer below in the definition of [equiv_classes]. *)
 
-(c)
+Definition prog_a : com :=
+  WHILE BNot (BLe (AId X) (ANum 0)) DO
+    X ::= APlus (AId X) (ANum 1)
+  END.
+
+Definition prog_b : com :=
+  IFB BEq (AId X) (ANum 0) THEN
+    X ::= APlus (AId X) (ANum 1);;
+    Y ::= ANum 1
+  ELSE
+    Y ::= ANum 0
+  FI;;
+  X ::= AMinus (AId X) (AId Y);;
+  Y ::= ANum 0.
+
+Definition prog_c : com :=
+  SKIP.
+
+Definition prog_d : com :=
+  WHILE BNot (BEq (AId X) (ANum 0)) DO
+    X ::= APlus (AMult (AId X) (AId Y)) (ANum 1)
+  END.
+
+Definition prog_e : com :=
+  Y ::= ANum 0.
+
+Definition prog_f : com :=
+  Y ::= APlus (AId X) (ANum 1);;
+  WHILE BNot (BEq (AId X) (AId Y)) DO
+    Y ::= APlus (AId X) (ANum 1)
+  END.
+
+Definition prog_g : com :=
+  WHILE BTrue DO
     SKIP
+  END.
 
-(d)
-    WHILE X <> 0 DO
-      X ::= X * Y + 1
-    END
+Definition prog_h : com :=
+  WHILE BNot (BEq (AId X) (AId X)) DO
+    X ::= APlus (AId X) (ANum 1)
+  END.
 
-(e)
-    Y ::= 0
+Definition prog_i : com :=
+  WHILE BNot (BEq (AId X) (AId Y)) DO
+    X ::= APlus (AId Y) (ANum 1)
+  END.
 
-(f)
-    Y ::= X + 1;
-    WHILE X <> Y DO
-      Y ::= X + 1
-    END
-
-(g)
-    WHILE BTrue DO
-      SKIP
-    END
-
-(h)
-    WHILE X <> X DO
-      X ::= X + 1
-    END
-
-(i)
-    WHILE X <> Y DO
-      X ::= Y + 1
-    END
-
-(* FILL IN HERE *)
-[] *)
-
+Definition equiv_classes : list (list com) :=
+(* FILL IN HERE *) admit.
+(* GRADE_TEST 2: check_equiv_classes equiv_classes *)
+(** [] *)
 
 (* ####################################################### *)
-
 (** ** Examples *)
 
 (** Here are some simple examples of equivalences of arithmetic
@@ -167,7 +150,7 @@ and
 Theorem aequiv_example:
   aequiv (AMinus (AId X) (AId X)) (ANum 0).
 Proof.
-  intros st. simpl. apply minus_diag.  
+  intros st. simpl. omega. 
 Qed.
 
 Theorem bequiv_example:
@@ -182,7 +165,7 @@ Qed.
 
 Theorem skip_left: forall c,
   cequiv 
-     (SKIP; c) 
+     (SKIP;; c) 
      c.
 Proof. 
   (* WORKED IN CLASS *)
@@ -198,10 +181,13 @@ Proof.
     assumption.  
 Qed.
 
-(** **** Exercise: 2 stars (skip_right) *)
+(** **** Exercise: 2 stars (skip_right)  *)
+(** Prove that adding a SKIP after a command results in an equivalent
+    program *)
+
 Theorem skip_right: forall c,
   cequiv 
-    (c; SKIP) 
+    (c;; SKIP) 
     c.
 Proof. 
   (* FILL IN HERE *) Admitted.
@@ -222,13 +208,16 @@ Proof.
   Case "<-".
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
+
 (** Of course, few programmers would be tempted to write a conditional
     whose guard is literally [BTrue].  A more interesting case is when
     the guard is _equivalent_ to true:
 
    _Theorem_: If [b] is equivalent to [BTrue], then [IFB b THEN c1
    ELSE c2 FI] is equivalent to [c1].
-
+*)
+(** *** *)
+(**
    _Proof_: 
 
      - ([->]) We must show, for all [st] and [st'], that if [IFB b
@@ -277,13 +266,15 @@ Proof.
     SCase "b evaluates to true".
       assumption.
     SCase "b evaluates to false (contradiction)".
+      unfold bequiv in Hb. simpl in Hb.
       rewrite Hb in H5.
       inversion H5.
   Case "<-".
     apply E_IfTrue; try assumption.
+    unfold bequiv in Hb. simpl in Hb.
     rewrite Hb. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars, recommended (IFB_false) *)
+(** **** Exercise: 2 stars (IFB_false)  *)
 Theorem IFB_false: forall b c1 c2,
   bequiv b BFalse  ->
   cequiv 
@@ -293,7 +284,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (swap_if_branches) *)
+(** **** Exercise: 3 stars (swap_if_branches)  *)
+(** Show that we can swap the branches of an IF by negating its
+    condition *)
+
 Theorem swap_if_branches: forall b e1 e2,
   cequiv
     (IFB b THEN e1 ELSE e2 FI)
@@ -301,6 +295,8 @@ Theorem swap_if_branches: forall b e1 e2,
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
+
+(** *** *)
 
 (** For [WHILE] loops, we can give a similar pair of theorems.  A loop
     whose guard is equivalent to [BFalse] is equivalent to [SKIP],
@@ -327,13 +323,14 @@ Proof.
     rewrite Hb.
     reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (WHILE_false_informal) *)
+(** **** Exercise: 2 stars, advanced, optional (WHILE_false_informal)  *)
 (** Write an informal proof of [WHILE_false].
 
 (* FILL IN HERE *)
 []
 *)
 
+(** *** *)
 (** To prove the second fact, we need an auxiliary lemma stating that
     [WHILE] loops whose guards are equivalent to [BTrue] never
     terminate:
@@ -366,27 +363,29 @@ Proof.
   (* WORKED IN CLASS *)
   intros b c st st' Hb.
   intros H.
-  remember (WHILE b DO c END) as cw.
+  remember (WHILE b DO c END) as cw eqn:Heqcw.
   ceval_cases (induction H) Case;
     (* Most rules don't apply, and we can rule them out 
        by inversion *)
     inversion Heqcw; subst; clear Heqcw.
   (* The two interesting cases are the ones for WHILE loops: *)
   Case "E_WhileEnd". (* contradictory -- b is always true! *)
-unfold bequiv in Hb.
+    unfold bequiv in Hb.
+    (* [rewrite] is able to instantiate the quantifier in [st] *)
     rewrite Hb in H. inversion H.
   Case "E_WhileLoop". (* immediate from the IH *)
     apply IHceval2. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars, optional (WHILE_true_nonterm_informal) *)
+(** **** Exercise: 2 stars, optional (WHILE_true_nonterm_informal)  *)
 (** Explain what the lemma [WHILE_true_nonterm] means in English.
 
 (* FILL IN HERE *)
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, recommended (WHILE_true) *)
-(** Hint: You'll want to use [WHILE_true_nonterm] here. *)
+(** **** Exercise: 2 stars (WHILE_true)  *)
+(** Prove the following theorem. _Hint_: You'll want to use
+    [WHILE_true_nonterm] here. *)
 
 Theorem WHILE_true: forall b c,
      bequiv b BTrue  ->
@@ -400,7 +399,7 @@ Proof.
 Theorem loop_unrolling: forall b c,
   cequiv
     (WHILE b DO c END)
-    (IFB b THEN (c; WHILE b DO c END) ELSE SKIP FI).
+    (IFB b THEN (c;; WHILE b DO c END) ELSE SKIP FI).
 Proof.
   (* WORKED IN CLASS *)
   intros b c st st'.
@@ -421,9 +420,9 @@ Proof.
     SCase "loop doesn't run".
       inversion H5; subst. apply E_WhileEnd. assumption.  Qed.
 
-(** **** Exercise: 2 stars, optional (seq_assoc) *)
+(** **** Exercise: 2 stars, optional (seq_assoc)  *)
 Theorem seq_assoc : forall c1 c2 c3,
-  cequiv ((c1;c2);c3) (c1;(c2;c3)).
+  cequiv ((c1;;c2);;c3) (c1;;(c2;;c3)).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -443,16 +442,14 @@ Proof.
        inversion H; subst.  simpl.
        replace (update st X (st X)) with st.  
        constructor. 
-       (* Here we're stuck. The goal looks reasonable,
-          but in fact it is not provable!  If we look back
-          at the set of lemmas we proved about [update] in
-          the last chapter, we can see that lemma
-          [update_same] almost does the job, but not quite:
-          it says that the original and updated states
-          agree at all values, but this is not the same
-          thing as saying that they are [=] in Coq's
-          sense! *)
-Admitted.
+       (* Stuck... *) Abort.
+
+(** Here we're stuck. The goal looks reasonable, but in fact it is not
+    provable!  If we look back at the set of lemmas we proved about
+    [update] in the last chapter, we can see that lemma [update_same]
+    almost does the job, but not quite: it says that the original and
+    updated states agree at all values, but this is not the same thing
+    as saying that they are [=] in Coq's sense! *)
 
 (** What is going on here?  Recall that our states are just
     functions from identifiers to values.  For Coq, functions are only
@@ -467,14 +464,15 @@ Admitted.
     than for the second parameter, so it is no wonder that the
     equality doesn't hold. *)
 
+(** *** *)
 (** This problem is actually quite general. If we try to prove other
     simple facts, such as
-    cequiv (X ::= APlus (AId X ANum 1) ; 
-            X ::= APlus (AId X ANum 1))
-           (X ::= APlus (AId X ANum 2))
+    cequiv (X ::= X + 1;;
+            X ::= X + 1)
+           (X ::= X + 2)
     or
-    cequiv (X ::= ANum 1; Y ::= ANum 2) 
-           (y ::= ANum 2; X ::= ANum 1)
+    cequiv (X ::= 1;; Y ::= 2)
+           (y ::= 2;; X ::= 1)
   
     we'll get stuck in the same way: we'll have two functions that
     behave the same way on all inputs, but cannot be proven to be [eq]
@@ -518,44 +516,13 @@ Proof.
        constructor. reflexivity.
 Qed.
 
-(** **** Exercise: 2 stars, recommended (assign_aequiv) *)
+(** **** Exercise: 2 stars (assign_aequiv)  *)
 Theorem assign_aequiv : forall X e,
   aequiv (AId X) e -> 
   cequiv SKIP (X ::= e).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
-
-(** **** Exercise: 2 stars, optional (functional_extensionality_failed_false) *)
-
-(** As we just mentioned, functional extensionality doesn't add
-    any inconsistencies into Coq. However, consider the following
-    theorem.  Inspired by it, we present an attempt to prove
-    [False]. Briefly explain why it will fail. *)
-
-Theorem feff_1 : true = false -> False.
-Proof.
-  intros. inversion H.
-Qed.
-
-Lemma feff_2 : empty_state = update empty_state X 0.
-Proof.
-  apply functional_extensionality. intros.
-  destruct x as [n]. destruct n as [| n'].
-  Case "x = AId 0". reflexivity.
-  Case "x = AId (S n')". reflexivity.
-Qed.
-
-(* Lemma feff_3 : empty_state = update empty_state X 0 -> False.
-Proof.
-  intros. inversion H. (* And this makes no progress! *)
-Qed. *)
-
-(** If we were able to prove [feff_3], then together with [feff_2],
-    a proof of [False] is immediate. Explain why the
-    [inversion H] fails, though it works in [feff_1]. *)
-
-(* FILL IN HERE *)
 
 (* ####################################################### *)
 (** * Properties of Behavioral Equivalence *)
@@ -568,7 +535,7 @@ Qed. *)
 
 (** First, we verify that the equivalences on [aexps], [bexps], and
     [com]s really are _equivalences_ -- i.e., that they are reflexive,
-    symmetric, and transitive: *)
+    symmetric, and transitive.  The proofs are all easy. *)
 
 Lemma refl_aequiv : forall (a : aexp), aequiv a a.
 Proof.
@@ -628,7 +595,7 @@ Proof.
   unfold cequiv. intros c1 c2 c3 H12 H23 st st'.
   apply iff_trans with (c2 / st || st'). apply H12. apply H23.  Qed.
 
-(* ########################################################*)
+(* ######################################################## *)
 (** ** Behavioral Equivalence is a Congruence *)
 
 (** Less obviously, behavioral equivalence is also a _congruence_.
@@ -641,11 +608,13 @@ Proof.
               cequiv c1 c1'    
               cequiv c2 c2'
          ------------------------
-         cequiv (c1;c2) (c1';c2')
-    ...and so on.  (Note that we are using the inference rule notation
-    here not as part of a definition, but simply to write down some
-    valid implications in a readable format. We prove these
-    implications below.) *)
+         cequiv (c1;;c2) (c1';;c2')
+    ...and so on.  
+
+    (Note that we are using the inference rule notation here not as
+    part of a definition, but simply to write down some valid
+    implications in a readable format. We prove these implications
+    below.) *)
  
 (** We will see a concrete example of why these congruence
     properties are important in the following section (in the proof of
@@ -716,7 +685,7 @@ Proof.
   intros b1 b1' c1 c1' Hb1e Hc1e st st'.
   split; intros Hce.
   Case "->".
-    remember (WHILE b1 DO c1 END) as cwhile.
+    remember (WHILE b1 DO c1 END) as cwhile eqn:Heqcwhile.
     induction Hce; inversion Heqcwhile; subst.
     SCase "E_WhileEnd".
       apply E_WhileEnd. rewrite <- Hb1e. apply H.
@@ -728,7 +697,7 @@ Proof.
       SSCase "subsequent loop execution".
         apply IHHce2. reflexivity.
   Case "<-".
-    remember (WHILE b1' DO c1' END) as c'while.
+    remember (WHILE b1' DO c1' END) as c'while eqn:Heqc'while.
     induction Hce; inversion Heqc'while; subst.
     SCase "E_WhileEnd".
       apply E_WhileEnd. rewrite -> Hb1e. apply H.
@@ -740,15 +709,15 @@ Proof.
       SSCase "subsequent loop execution".
         apply IHHce2. reflexivity.  Qed.
 
-(** **** Exercise: 3 stars, optional (CSeq_congruence) *)
+(** **** Exercise: 3 stars, optional (CSeq_congruence)  *)
 Theorem CSeq_congruence : forall c1 c1' c2 c2',
   cequiv c1 c1' -> cequiv c2 c2' ->
-  cequiv (c1;c2) (c1';c2').
+  cequiv (c1;;c2) (c1';;c2').
 Proof. 
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (CIf_congruence) *)
+(** **** Exercise: 3 stars (CIf_congruence)  *)
 Theorem CIf_congruence : forall b b' c1 c1' c2 c2',
   bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (IFB b THEN c1 ELSE c2 FI) (IFB b' THEN c1' ELSE c2' FI).
@@ -756,19 +725,23 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(** *** *)
+
 (** For example, here are two equivalent programs and a proof of their
     equivalence... *)
 
 Example congruence_example:
   cequiv
-    (X ::= ANum 0;
+    (* Program 1: *)
+    (X ::= ANum 0;;
      IFB (BEq (AId X) (ANum 0))
      THEN
        Y ::= ANum 0
      ELSE
        Y ::= ANum 42
      FI)
-    (X ::= ANum 0;
+    (* Program 2: *)
+    (X ::= ANum 0;;
      IFB (BEq (AId X) (ANum 0))
      THEN
        Y ::= AMinus (AId X) (AId X)   (* <--- changed here *)
@@ -786,18 +759,15 @@ Proof.
 Qed.
 
 (* ####################################################### *)
-(** * Case Study: Constant Folding *)
+(** * Program Transformations *)
 
 (** A _program transformation_ is a function that takes a program
     as input and produces some variant of the program as its
     output.  Compiler optimizations such as constant folding are
     a canonical example, but there are many others. *)
 
-(* ####################################################### *)
-(** ** Soundness of Program Transformations *)
-
 (** A program transformation is _sound_ if it preserves the
-    behavior of the original program.
+    behavior of the original program. 
  
     We can define a notion of soundness for translations of
     [aexp]s, [bexp]s, and [com]s. *)
@@ -862,6 +832,7 @@ Example fold_aexp_ex2 :
   = AMinus (AId X) (APlus (ANum 0) (AId Y)).
 Proof. reflexivity. Qed.
 
+(** *** *)
 (** Not only can we lift [fold_constants_aexp] to [bexp]s (in the
     [BEq] and [BLe] cases), we can also find constant _boolean_
     expressions and reduce them in-place. *)
@@ -909,6 +880,7 @@ Example fold_bexp_ex2 :
   = BAnd (BEq (AId X) (AId Y)) BTrue.
 Proof. reflexivity. Qed.
 
+(** *** *)
 (** To fold constants in a command, we apply the appropriate folding
     functions on all embedded expressions. *)
 
@@ -918,8 +890,8 @@ Fixpoint fold_constants_com (c : com) : com :=
       SKIP
   | i ::= a  => 
       CAss i (fold_constants_aexp a)
-  | c1 ; c2  => 
-      (fold_constants_com c1) ; (fold_constants_com c2)
+  | c1 ;; c2  => 
+      (fold_constants_com c1) ;; (fold_constants_com c2)
   | IFB b THEN c1 ELSE c2 FI => 
       match fold_constants_bexp b with
       | BTrue => fold_constants_com c1
@@ -935,41 +907,45 @@ Fixpoint fold_constants_com (c : com) : com :=
       end
   end.
 
+(** *** *)
 Example fold_com_ex1 :
   fold_constants_com 
-    (X ::= APlus (ANum 4) (ANum 5);
-     Y ::= AMinus (AId X) (ANum 3);
+    (* Original program: *)
+    (X ::= APlus (ANum 4) (ANum 5);;
+     Y ::= AMinus (AId X) (ANum 3);;
      IFB BEq (AMinus (AId X) (AId Y)) (APlus (ANum 2) (ANum 4)) THEN
        SKIP 
      ELSE
        Y ::= ANum 0
-     FI;
+     FI;;
      IFB BLe (ANum 0) (AMinus (ANum 4) (APlus (ANum 2) (ANum 1))) THEN
        Y ::= ANum 0
      ELSE
        SKIP 
-     FI;
+     FI;;
      WHILE BEq (AId Y) (ANum 0) DO 
        X ::= APlus (AId X) (ANum 1) 
-     END) =
-  (X ::= ANum 9;
-   Y ::= AMinus (AId X) (ANum 3);
-   IFB BEq (AMinus (AId X) (AId Y)) (ANum 6) THEN
-     SKIP 
-   ELSE
-     (Y ::= ANum 0) 
-   FI;
-   Y ::= ANum 0;
-   WHILE BEq (AId Y) (ANum 0) DO 
-     X ::= APlus (AId X) (ANum 1) 
-   END).
+     END) 
+  = (* After constant folding: *)
+    (X ::= ANum 9;;
+     Y ::= AMinus (AId X) (ANum 3);;
+     IFB BEq (AMinus (AId X) (AId Y)) (ANum 6) THEN
+       SKIP 
+     ELSE
+       (Y ::= ANum 0) 
+     FI;;
+     Y ::= ANum 0;;
+     WHILE BEq (AId Y) (ANum 0) DO 
+       X ::= APlus (AId X) (ANum 1) 
+     END).
 Proof. reflexivity. Qed.
 
 (* ################################################### *)
 (** ** Soundness of Constant Folding *)
 
-(** Now we need to show that what we've done is correct.  Here's
-    the proof for arithmetic expressions: *)
+(** Now we need to show that what we've done is correct. *)
+
+(** Here's the proof for arithmetic expressions: *)
 
 Theorem fold_constants_aexp_sound : 
   atrans_sound fold_constants_aexp.
@@ -988,7 +964,7 @@ Proof.
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
                                                       
-(** **** Exercise: 3 stars, optional (fold_bexp_BEq_informal) *)
+(** **** Exercise: 3 stars, optional (fold_bexp_Eq_informal)  *)
 (** Here is an informal proof of the [BEq] case of the soundness
     argument for boolean expression constant folding.  Read it
     carefully and compare it to the formal proof that follows.  Then
@@ -1075,8 +1051,8 @@ Proof.
        context with the [rename] tactic: [rename a into a1] will
        change [a] to [a1] in the current goal and context. *)
     rename a into a1. rename a0 into a2. simpl.
-    remember (fold_constants_aexp a1) as a1'. 
-    remember (fold_constants_aexp a2) as a2'.
+    remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
+    remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
     replace (aeval st a1) with (aeval st a1') by
        (subst a1'; rewrite <- fold_constants_aexp_sound; reflexivity).
     replace (aeval st a2) with (aeval st a2') by
@@ -1088,18 +1064,18 @@ Proof.
   Case "BLe". 
     (* FILL IN HERE *) admit.
   Case "BNot". 
-    simpl. remember (fold_constants_bexp b) as b'. 
+    simpl. remember (fold_constants_bexp b) as b' eqn:Heqb'. 
     rewrite IHb.
     destruct b'; reflexivity. 
   Case "BAnd". 
     simpl. 
-    remember (fold_constants_bexp b1) as b1'. 
-    remember (fold_constants_bexp b2) as b2'.
+    remember (fold_constants_bexp b1) as b1' eqn:Heqb1'. 
+    remember (fold_constants_bexp b2) as b2' eqn:Heqb2'.
     rewrite IHb1. rewrite IHb2.
     destruct b1'; destruct b2'; reflexivity.  Qed.
 (** [] *)
 
-(** **** Exercise: 3 stars (fold_constants_com_sound) *)
+(** **** Exercise: 3 stars (fold_constants_com_sound)  *)
 (** Complete the [WHILE] case of the following proof. *)
 
 Theorem fold_constants_com_sound : 
@@ -1109,12 +1085,11 @@ Proof.
   com_cases (induction c) Case; simpl.
   Case "SKIP". apply refl_cequiv.
   Case "::=". apply CAss_congruence. apply fold_constants_aexp_sound.
-  Case ";". apply CSeq_congruence; assumption.
+  Case ";;". apply CSeq_congruence; assumption.
   Case "IFB". 
     assert (bequiv b (fold_constants_bexp b)).
       SCase "Pf of assertion". apply fold_constants_bexp_sound.
-    remember (fold_constants_bexp b) as b'.
-    destruct b';
+    destruct (fold_constants_bexp b) eqn:Heqb;
       (* If the optimization doesn't eliminate the if, then the result
          is easy to prove from the IH and fold_constants_bexp_sound *)
       try (apply CIf_congruence; assumption).
@@ -1131,7 +1106,7 @@ Proof.
 (* ########################################################## *)
 (** *** Soundness of (0 + n) Elimination, Redux *)
 
-(** **** Exercise: 4 stars, optional (optimize_0plus) *)
+(** **** Exercise: 4 stars, advanced, optional (optimize_0plus)  *)
 (** Recall the definition [optimize_0plus] from Imp.v:
     Fixpoint optimize_0plus (e:aexp) : aexp := 
       match e with
@@ -1155,8 +1130,8 @@ Proof.
      optimize_0plus_bexp
      optimize_0plus_com
    Prove that these three functions are sound, as we did for
-   [fold_constants_*].  Make sure you use the congruence lemmas in
-   the proof of [optimize_0plus_com] (otherwise it will be _long_!).
+   [fold_constants_*].  (Make sure you use the congruence lemmas in
+   the proof of [optimize_0plus_com] -- otherwise it will be _long_!)
 
    Then define an optimizer on commands that first folds
    constants (using [fold_constants_com]) and then eliminates [0 + n]
@@ -1173,13 +1148,13 @@ Proof.
 (* ####################################################### *)
 (** * Proving That Programs Are _Not_ Equivalent *)
 
-(** Suppose that [c1] is a command of the form [X ::= a1; Y ::= a2]
-    and [c2] is the command [X ::= a1; Y ::= a2'], where [a2'] is
+(** Suppose that [c1] is a command of the form [X ::= a1;; Y ::= a2]
+    and [c2] is the command [X ::= a1;; Y ::= a2'], where [a2'] is
     formed by substituting [a1] for all occurrences of [X] in [a2].
     For example, [c1] and [c2] might be:
-       c1  =  (X ::= 42 + 53; 
+       c1  =  (X ::= 42 + 53;; 
                Y ::= Y + X)
-       c2  =  (X ::= 42 + 53; 
+       c2  =  (X ::= 42 + 53;; 
                Y ::= Y + (42 + 53))
     Clearly, this _particular_ [c1] and [c2] are equivalent.  Is this
     true in general? *)
@@ -1195,7 +1170,7 @@ Proof.
 Fixpoint subst_aexp (i : id) (u : aexp) (a : aexp) : aexp :=
   match a with
   | ANum n       => ANum n
-  | AId i'       => if beq_id i i' then u else AId i'
+  | AId i'       => if eq_id_dec i i' then u else AId i'
   | APlus a1 a2  => APlus (subst_aexp i u a1) (subst_aexp i u a2)
   | AMinus a1 a2 => AMinus (subst_aexp i u a1) (subst_aexp i u a2)
   | AMult a1 a2  => AMult (subst_aexp i u a1) (subst_aexp i u a2)
@@ -1211,38 +1186,40 @@ Proof. reflexivity.  Qed.
     always equivalent.  *)
 
 Definition subst_equiv_property := forall i1 i2 a1 a2,
-  cequiv (i1 ::= a1; i2 ::= a2)
-         (i1 ::= a1; i2 ::= subst_aexp i1 a1 a2).
+  cequiv (i1 ::= a1;; i2 ::= a2)
+         (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 
+(** *** *)
 (** Sadly, the property does _not_ always hold. 
 
     _Theorem_: It is not the case that, for all [i1], [i2], [a1],
     and [a2],
-         cequiv (i1 ::= a1; i2 ::= a2)
-                (i1 ::= a1; i2 ::= subst_aexp i1 a1 a2).
+         cequiv (i1 ::= a1;; i2 ::= a2)
+                (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 ]] 
     _Proof_: Suppose, for a contradiction, that for all [i1], [i2],
     [a1], and [a2], we have
-      cequiv (i1 ::= a1; i2 ::= a2) 
-             (i1 ::= a1; i2 ::= subst_aexp i1 a1 a2).
+      cequiv (i1 ::= a1;; i2 ::= a2) 
+             (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
     Consider the following program:
-         X ::= APlus (AId X) (ANum 1); Y ::= AId X
+         X ::= APlus (AId X) (ANum 1);; Y ::= AId X
     Note that
-         (X ::= APlus (AId X) (ANum 1); Y ::= AId X)
+         (X ::= APlus (AId X) (ANum 1);; Y ::= AId X)
          / empty_state || st1,
     where [st1 = { X |-> 1, Y |-> 1 }].
 
     By our assumption, we know that
-        cequiv (X ::= APlus (AId X) (ANum 1); Y ::= AId X)
-               (X ::= APlus (AId X) (ANum 1); Y ::= APlus (AId X) (ANum 1))
+        cequiv (X ::= APlus (AId X) (ANum 1);; Y ::= AId X)
+               (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1))
     so, by the definition of [cequiv], we have
-        (X ::= APlus (AId X) (ANum 1); Y ::= APlus (AId X) (ANum 1))
+        (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1))
         / empty_state || st1.
     But we can also derive
-        (X ::= APlus (AId X) (ANum 1); Y ::= APlus (AId X) (ANum 1))
+        (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1))
         / empty_state || st2,
     where [st2 = { X |-> 1, Y |-> 2 }].  Note that [st1 <> st2]; this
     is a contradiction, since [ceval] is deterministic!  [] *)
+
 
 Theorem subst_inequiv : 
   ~ subst_equiv_property.
@@ -1253,10 +1230,10 @@ Proof.
   (* Here is the counterexample: assuming that [subst_equiv_property]
      holds allows us to prove that these two programs are
      equivalent... *)
-  remember (X ::= APlus (AId X) (ANum 1); 
+  remember (X ::= APlus (AId X) (ANum 1);; 
             Y ::= AId X) 
       as c1.
-  remember (X ::= APlus (AId X) (ANum 1); 
+  remember (X ::= APlus (AId X) (ANum 1);; 
             Y ::= APlus (AId X) (ANum 1)) 
       as c2.
   assert (cequiv c1 c2) by (subst; apply Contra).
@@ -1282,7 +1259,7 @@ Proof.
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
 
-(** **** Exercise: 4 stars, optional (better_subst_equiv) *)
+(** **** Exercise: 4 stars, optional (better_subst_equiv)  *)
 (** The equivalence we had in mind above was not complete nonsense --
     it was actually almost right.  To make it correct, we just need to
     exclude the case where the variable [X] occurs in the
@@ -1316,7 +1293,9 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (inequiv_exercise) *)
+(** **** Exercise: 3 stars, optional (inequiv_exercise)  *)
+(** Prove that an infinite loop is not equivalent to [SKIP] *)
+
 Theorem inequiv_exercise: 
   ~ cequiv (WHILE BTrue DO SKIP END) SKIP.
 Proof.
@@ -1332,8 +1311,8 @@ Proof.
     languages (such as C and its relatives), the order in which
     function arguments are evaluated is unspecified.  The program
     fragment
-      x = 0;
-      f(++x, x);
+      x = 0;;
+      f(++x, x)
     might call [f] with arguments [(1, 0)] or [(1, 1)], depending how
     the compiler chooses to order things.  This can be a little
     confusing for programmers, but it gives the compiler writer useful
@@ -1345,11 +1324,11 @@ Proof.
     where [X] is an identifier. The effect of executing [HAVOC X] is
     to assign an _arbitrary_ number to the variable [X],
     non-deterministically. For example, after executing the program:
-      HAVOC Y;
+      HAVOC Y;;
       Z ::= Y * 2
     the value of [Y] can be any number, while the value of [Z] is
     twice that of [Y] (so [Z] is always even). Note that we are not
-    saying anything about the /probabilities/ of the outcomes -- just
+    saying anything about the _probabilities_ of the outcomes -- just
     that there are (infinitely) many different outcomes that can
     possibly happen after executing this non-deterministic code.
 
@@ -1378,14 +1357,14 @@ Inductive com : Type :=
 
 Tactic Notation "com_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "SKIP" | Case_aux c "::=" | Case_aux c ";"
+  [ Case_aux c "SKIP" | Case_aux c "::=" | Case_aux c ";;"
   | Case_aux c "IFB" | Case_aux c "WHILE" | Case_aux c "HAVOC" ].
 
 Notation "'SKIP'" :=
   CSkip.
 Notation "X '::=' a" :=
   (CAss X a) (at level 60).
-Notation "c1 ; c2" :=
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
@@ -1393,7 +1372,7 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
   (CIf e1 e2 e3) (at level 80, right associativity).
 Notation "'HAVOC' l" := (CHavoc l) (at level 60).
 
-(** **** Exercise: 2 stars (himp_ceval) *)
+(** **** Exercise: 2 stars (himp_ceval)  *)
 (** Now, we must extend the operational semantics. We have provided
    a template for the [ceval] relation below, specifying the big-step
    semantics. What rule(s) must be added to the definition of [ceval]
@@ -1406,7 +1385,7 @@ Inductive ceval : com -> state -> state -> Prop :=
   | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : id),
             aeval st a1 = n -> (X ::= a1) / st || update st X n
   | E_Seq : forall (c1 c2 : com) (st st' st'' : state),
-            c1 / st || st' -> c2 / st' || st'' -> (c1 ; c2) / st || st''
+            c1 / st || st' -> c2 / st' || st'' -> (c1 ;; c2) / st || st''
   | E_IfTrue : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
                beval st b1 = true ->
                c1 / st || st' -> (IFB b1 THEN c1 ELSE c2 FI) / st || st'
@@ -1440,7 +1419,7 @@ Proof.
 (* FILL IN HERE *) Admitted.
 
 Example havoc_example2 :
-  (SKIP; HAVOC Z) / empty_state || update empty_state Z 42.
+  (SKIP;; HAVOC Z) / empty_state || update empty_state Z 42.
 Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1454,30 +1433,32 @@ Definition cequiv (c1 c2 : com) : Prop := forall st st' : state,
     terminating programs, so let's apply it to prove some
     non-deterministic programs equivalent or non-equivalent. *)
 
-(** **** Exercise: 3 stars (havoc_swap) *)
+(** **** Exercise: 3 stars (havoc_swap)  *)
 (** Are the following two programs equivalent? *)
 
 Definition pXY :=
-  HAVOC X; HAVOC Y.
+  HAVOC X;; HAVOC Y.
 
 Definition pYX :=
-  HAVOC Y; HAVOC X.
+  HAVOC Y;; HAVOC X.
 
 (** If you think they are equivalent, prove it. If you think they are
     not, prove that. *)
 
+
 Theorem pXY_cequiv_pYX :
   cequiv pXY pYX \/ ~cequiv pXY pYX.
 Proof. (* FILL IN HERE *) Admitted.
+(** [] *)
 
-(** **** Exercise: 4 stars (havoc_copy) *)
+(** **** Exercise: 4 stars, optional (havoc_copy)  *)
 (** Are the following two programs equivalent? *)
 
 Definition ptwice :=
-  HAVOC X; HAVOC Y.
+  HAVOC X;; HAVOC Y.
 
 Definition pcopy :=
-  HAVOC X; Y ::= AId X.
+  HAVOC X;; Y ::= AId X.
 
 (** If you think they are equivalent, then prove it. If you think they
     are not, then prove that.  (Hint: You may find the [assert] tactic
@@ -1495,18 +1476,18 @@ Proof. (* FILL IN HERE *) Admitted.
     with non-determinism, like Himp, some programs always terminate,
     some programs always diverge, and some programs can
     non-deterministically terminate in some runs and diverge in
-    others. The final part of the following optional exercise
-    illustrates this phenomenon.
+    others. The final part of the following exercise illustrates this
+    phenomenon.
 *)
 
-(** **** Exercise: 5 stars, optional (havoc_diverge) *)
-(** Prove the following program equivalences and non-equivalences, and
-    try to understand why the [cequiv] definition has the behavior it
-    has on these examples. *)
+(** **** Exercise: 5 stars, advanced (p1_p2_equiv)  *)
+(** Prove that p1 and p2 are equivalent. In this and the following
+    exercises, try to understand why the [cequiv] definition has the
+    behavior it has on these examples. *)
 
 Definition p1 : com :=
   WHILE (BNot (BEq (AId X) (ANum 0))) DO
-    HAVOC Y;
+    HAVOC Y;;
     X ::= APlus (AId X) (ANum 1)
   END.
 
@@ -1516,23 +1497,48 @@ Definition p2 : com :=
   END.
 
 
-Theorem p1_p2_equiv : cequiv p1 p2.
+(** Intuitively, the programs have the same termination
+    behavior: either they loop forever, or they terminate in the
+    same state they started in.  We can capture the termination
+    behavior of p1 and p2 individually with these lemmas: *)
+
+Lemma p1_may_diverge : forall st st', st X <> 0 ->
+  ~ p1 / st || st'.
 Proof. (* FILL IN HERE *) Admitted.
 
+Lemma p2_may_diverge : forall st st', st X <> 0 ->
+  ~ p2 / st || st'.
+Proof.
+(* FILL IN HERE *) Admitted.
+
+(** You should use these lemmas to prove that p1 and p2 are actually
+    equivalent. *)
+
+Theorem p1_p2_equiv : cequiv p1 p2.
+Proof. (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** **** Exercise: 4 stars, advanced (p3_p4_inquiv)  *)
+
+(** Prove that the following programs are _not_ equivalent. *)
+
 Definition p3 : com :=
-  Z ::= ANum 1;
+  Z ::= ANum 1;;
   WHILE (BNot (BEq (AId X) (ANum 0))) DO
-    HAVOC X;
+    HAVOC X;;
     HAVOC Z
   END.
 
 Definition p4 : com :=
-  X ::= (ANum 0);
+  X ::= (ANum 0);;
   Z ::= (ANum 1).
 
 
 Theorem p3_p4_inequiv : ~ cequiv p3 p4.
 Proof. (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** **** Exercise: 5 stars, advanced, optional (p5_p6_equiv)  *)
 
 Definition p5 : com :=
   WHILE (BNot (BEq (AId X) (ANum 1))) DO
@@ -1550,7 +1556,7 @@ Proof. (* FILL IN HERE *) Admitted.
 End Himp.
 
 (* ####################################################### *)
-(** * Doing Without Extensionality (Optional) *)
+(** * Doing Without Extensionality (Advanced) *)
 
 (** Purists might object to using the [functional_extensionality]
     axiom.  In general, it can be quite dangerous to add axioms,
@@ -1575,14 +1581,14 @@ Notation "st1 '~' st2" := (stequiv st1 st2) (at level 30).
    is reflexive, symmetric, and transitive), so it partitions the set
    of all states into equivalence classes. *)
 
-(** **** Exercise: 1 star, optional (stequiv_refl) *)
+(** **** Exercise: 1 star, optional (stequiv_refl)  *)
 Lemma stequiv_refl : forall (st : state), 
   st ~ st.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (stequiv_sym) *)
+(** **** Exercise: 1 star, optional (stequiv_sym)  *)
 Lemma stequiv_sym : forall (st1 st2 : state), 
   st1 ~ st2 -> 
   st2 ~ st1.
@@ -1590,7 +1596,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
    
-(** **** Exercise: 1 star, optional (stequiv_trans) *)
+(** **** Exercise: 1 star, optional (stequiv_trans)  *)
 Lemma stequiv_trans : forall (st1 st2 st3 : state), 
   st1 ~ st2 -> 
   st2 ~ st3 -> 
@@ -1600,7 +1606,7 @@ Proof.
 (** [] *)
 
 (** Another useful fact... *)
-(** **** Exercise: 1 star, optional (stequiv_update) *)
+(** **** Exercise: 1 star, optional (stequiv_update)  *)
 Lemma stequiv_update : forall (st1 st2 : state),
   st1 ~ st2 -> 
   forall (X:id) (n:nat),
@@ -1612,7 +1618,7 @@ Proof.
 (** It is then straightforward to show that [aeval] and [beval] behave
     uniformly on all members of an equivalence class: *)
 
-(** **** Exercise: 2 stars, optional (stequiv_aeval) *)
+(** **** Exercise: 2 stars, optional (stequiv_aeval)  *)
 Lemma stequiv_aeval : forall (st1 st2 : state), 
   st1 ~ st2 ->
   forall (a:aexp), aeval st1 a = aeval st2 a. 
@@ -1620,7 +1626,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (stequiv_beval) *)
+(** **** Exercise: 2 stars, optional (stequiv_beval)  *)
 Lemma stequiv_beval : forall (st1 st2 : state), 
   st1 ~ st2 ->
   forall (b:bexp), beval st1 b = beval st2 b. 
@@ -1646,7 +1652,7 @@ Proof.
       constructor. 
       assumption.
   Case ":=".
-    exists (update st2 X n). split. 
+    exists (update st2 x n). split. 
        constructor.  rewrite <- H. symmetry.  apply stequiv_aeval. 
        assumption. apply stequiv_update.  assumption.
   Case ";".
@@ -1713,7 +1719,7 @@ Proof.
     apply (H st st'0). assumption. assumption.
 Qed.
 
-(** **** Exercise: 2 stars, optional (identity_assignment') *)
+(** **** Exercise: 2 stars, optional (identity_assignment')  *)
 (** Finally, here is our example once more... (You can complete the
     proof.) *)
 
@@ -1746,7 +1752,7 @@ Proof.
 (* ####################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 4 stars, optional (for_while_equiv) *)
+(** **** Exercise: 4 stars, optional (for_while_equiv)  *)
 (** This exercise extends the optional [add_for_loop] exercise from
     Imp.v, where you were asked to extend the language of commands
     with C-style [for] loops.  Prove that the command:
@@ -1763,14 +1769,14 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (swap_noninterfering_assignments) *)
+(** **** Exercise: 3 stars, optional (swap_noninterfering_assignments)  *)
 Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
   l1 <> l2 -> 
   var_not_used_in_aexp l1 a2 ->
   var_not_used_in_aexp l2 a1 ->
   cequiv
-    (l1 ::= a1; l2 ::= a2)
-    (l2 ::= a2; l1 ::= a1).
+    (l1 ::= a1;; l2 ::= a2)
+    (l2 ::= a2;; l1 ::= a1).
 Proof. 
 (* Hint: You'll need [functional_extensionality] *)
 (* FILL IN HERE *) Admitted.

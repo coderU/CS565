@@ -481,19 +481,14 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
     [split].  Make sure it passes the given unit tests. *)
 
 Fixpoint split
-         {X Y : Type} (l : list (X*Y))
-: (list X) * (list Y) :=
-  match l with
-    | [] => ([],[])
-    | (x,y)::t => match split t with (xs, ys) => (x::xs,y::ys) end
-  end.
-
+           {X Y : Type} (l : list (X*Y))
+           : (list X) * (list Y) :=
+(* FILL IN HERE *) admit.
 
 Example test_split:
   split [(1,false);(2,false)] = ([1;2],[false;false]).
 Proof.
-  simpl. reflexivity. Qed.
-
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* ###################################################### *)

@@ -110,7 +110,14 @@ Qed.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros.
+  unfold not.
+  intros.
+  inversion H0.
+  apply H1.
+  apply H.
+  Qed.
+  
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (not_exists_dist)  *)
@@ -132,7 +139,23 @@ Proof.
 Theorem dist_exists_or : forall (X:Type) (P Q : X -> Prop),
   (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
 Proof.
-   (* FILL IN HERE *) Admitted.
+  intros. split.
+  intros.
+  inversion H.
+  inversion H0.
+  left. exists witness. apply H1.
+  right. exists witness. apply H1.
+  intros.
+  inversion H.
+  inversion H0.
+  exists witness.
+  left. apply H1.
+  inversion H0.
+  exists witness.
+  right.
+  apply H1.
+  Qed.
+  
 (** [] *)
 
 (* ###################################################### *)
@@ -235,7 +258,12 @@ Proof.
 Theorem override_shadow' : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   (override' (override' f k1 x2) k1 x1) k2 = (override' f k1 x1) k2.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  unfold override'.
+  destruct (eq_nat_dec k1 k2).
+  reflexivity.
+  reflexivity.
+  Qed.
 (** [] *)
 
 

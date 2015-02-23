@@ -51,7 +51,14 @@ Inductive ev : nat -> Prop :=
 Theorem double_even : forall n,
   ev (double n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n.
+  simpl.
+  apply ev_0.
+  simpl.
+  apply ev_SS.
+  apply IHn.
+  Qed.
 (** [] *)
 
 
@@ -138,7 +145,7 @@ Proof.
 (** **** Exercise: 1 star (varieties_of_beauty)  *)
 (** How many different ways are there to show that [8] is [beautiful]? *)
 
-(* FILL IN HERE *)
+(* Infinite, because you can destruct 8 as 0 + 8 as long as you want. *)
 (** [] *)
 
 (* ####################################################### *)
@@ -191,16 +198,42 @@ Proof.
 Qed.
 
 (** **** Exercise: 2 stars (b_times2)  *)
+SearchAbout ["_0"].
+               
 Theorem b_times2: forall n, beautiful n -> beautiful (2*n).
 Proof.
-    (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n.
+  simpl.
+  intros H.
+  apply H.
+  intros H.
+  apply b_sum. apply H.
+  rewrite plus_0_r.
+  apply H.
+  Qed.
 (** [] *)
-
+SearchAbout ["S"].
 (** **** Exercise: 3 stars (b_timesm)  *)
 Theorem b_timesm: forall n m, beautiful n -> beautiful (m*n).
 Proof.
-   (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m H.
+  induction m as [| m'].
+  simpl.
+  apply b_0.
+  rewrite <- plus_1_l.
+  rewrite mult_plus_distr_r.
+  apply b_sum.
+  simpl.
+  rewrite plus_0_r.
+  apply H.
+  apply IHm'.
+  Qed.
+  
+
+  
+  
+
 
 
 (* ####################################################### *)
@@ -244,7 +277,14 @@ Inductive gorgeous : nat -> Prop :=
 (** Write out the definition of [gorgeous] numbers using inference rule
     notation.
  
-(* FILL IN HERE *)
+(* --------- (g_0)
+gorgeous0
+gorgeous n
+-------------- (g_plus3)
+gorgeous (n+3)
+gorgeous n
+-------------- (g_plus5)
+gorgeous (n+5) *)
 []
 *)
 
@@ -253,7 +293,12 @@ Inductive gorgeous : nat -> Prop :=
 Theorem gorgeous_plus13: forall n, 
   gorgeous n -> gorgeous (13+n).
 Proof.
-   (* FILL IN HERE *) Admitted.
+  intros.
+  repeat apply g_plus5.
+  apply g_plus3.
+  apply H.
+  Qed.
+  
 (** [] *)
 
 (** *** *)
@@ -306,13 +351,32 @@ Qed.
 Theorem gorgeous_sum : forall n m,
   gorgeous n -> gorgeous m -> gorgeous (n + m).
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros n m H1 H2.
+  induction H1.
+  simpl.
+  apply H2.
+  simpl.
+  apply g_plus3.
+  apply IHgorgeous.
+  simpl.
+  apply g_plus5.
+  apply IHgorgeous.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (beautiful__gorgeous)  *)
 Theorem beautiful__gorgeous : forall n, beautiful n -> gorgeous n.
 Proof.
- (* FILL IN HERE *) Admitted.
+  intros n H.
+  induction H.
+  apply g_0.
+  apply g_plus3.   apply g_0.
+  apply g_plus5.   apply g_0.
+  apply gorgeous_sum.
+  apply IHbeautiful1.
+  apply IHbeautiful2.
+  Qed.
+  
 (** [] *)
 
 
@@ -324,13 +388,33 @@ Proof.
 
 Lemma helper_g_times2 : forall x y z, x + (z + y) = z + x + y.
 Proof.
-   (* FILL IN HERE *) Admitted.
+  intros x y z.
+  rewrite plus_swap.
+  rewrite plus_assoc.
+  reflexivity.
+  Qed.
+
 
 Theorem g_times2: forall n, gorgeous n -> gorgeous (2*n).
 Proof.
    intros n H. simpl. 
    induction H.
-   (* FILL IN HERE *) Admitted.
+   simpl.
+   apply g_0.
+   rewrite  helper_g_times2;
+   rewrite plus_swap; simpl;
+   repeat apply g_plus3.
+   rewrite <- plus_assoc.
+   apply IHgorgeous.
+   rewrite  helper_g_times2.
+   rewrite plus_swap. simpl.
+   repeat apply g_plus5.
+   rewrite <- plus_assoc.
+   apply IHgorgeous.
+   Qed.
+   
+
+   
 (** [] *)
 
 
@@ -352,7 +436,7 @@ Qed.
 (** Could this proof also be carried out by induction on [n] instead
     of [E]?  If not, why not? *)
 
-(* FILL IN HERE *)
+(* no, because induction on n can not really tell us information about the ev status. *)
 (** [] *)
 
 (** Intuitively, the induction principle [ev n] evidence [ev n] is
@@ -370,18 +454,24 @@ Qed.
            ...
    Intuitively, we expect the proof to fail because not every
    number is even. However, what exactly causes the proof to fail?
-
+Because we cannot prove some number that is not even to be even.
 (* FILL IN HERE *)
 *)
 (** [] *)
 
 (** Here's another exercise requiring induction on evidence. *)
 (** **** Exercise: 2 stars (ev_sum)  *)
-
+SearchAbout ["ev_"].
 Theorem ev_sum : forall n m,
    ev n -> ev m -> ev (n+m).
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros n m H1 H2.
+  induction H1.
+  simpl. apply H2.
+  simpl.
+  apply ev_SS.
+  apply IHev.
+  Qed.
 (** [] *)
 
 
@@ -460,7 +550,11 @@ Proof.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  inversion H.
+  inversion H1.
+  apply H3.
+  Qed.
 
 (** The [inversion] tactic can also be used to derive goals by showing
     the absurdity of a hypothesis. *)
@@ -468,17 +562,51 @@ Proof.
 Theorem even5_nonsense : 
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  inversion H.
+  inversion H1.
+  inversion H3.
+  Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (ev_ev__ev)  *)
 (** Finding the appropriate thing to do induction on is a
     bit tricky here: *)
 
+SearchAbout ["_0"].
+
+Theorem mytool1 : forall n m,
+                    n+m = 0 -> n=0.
+Proof.
+  intros. induction m.
+  rewrite plus_0_r in H.
+  apply H.
+  inversion H.
+  induction n.
+  simpl.
+  simpl in H.
+  rewrite H. reflexivity.
+  inversion H.
+  Qed.
+
+  
+  
+SearchAbout ["ev_"].
+    
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H1 H2.
+  induction H2.
+  simpl in H1. apply H1.
+  apply IHev.
+  simpl in H1.
+  inversion H1.
+  apply H0.
+  Qed.
+  
+  
+  
 (** [] *)
 
 (** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
@@ -611,7 +739,7 @@ lack of evidence. *)
     thought of as a _relation_ -- i.e., it defines a set of pairs for
     which the proposition is provable. *)
 
-Module LeModule.  
+Module LeModule.
 
 
 (** One useful example is the "less than or equal to"
@@ -688,13 +816,16 @@ Inductive next_even : nat -> nat -> Prop :=
 (** **** Exercise: 2 stars (total_relation)  *)
 (** Define an inductive binary relation [total_relation] that holds
     between every pair of natural numbers. *)
-
+Inductive total_relation : nat -> nat -> Prop :=
+  tr : forall n m, total_relation n m.
 (* FILL IN HERE *)
 (** [] *)
 
 (** **** Exercise: 2 stars (empty_relation)  *)
 (** Define an inductive binary relation [empty_relation] (on numbers)
     that never holds. *)
+Inductive empty_relation : nat -> nat -> Prop :=
+  er : forall n m, 1+1=3 -> empty_relation n m.
 
 (* FILL IN HERE *)
 (** [] *)
@@ -704,69 +835,183 @@ Inductive next_even : nat -> nat -> Prop :=
     we are going to need later in the course.  The proofs make good
     practice exercises. *)
 
+Theorem Sn_le_m__n_le_m : forall n m,
+  S n <= m -> n <= m.
+Proof.
+  intros n m H. induction H.
+  Case "le_n". apply le_S. apply le_n.
+  Case "le_S". apply le_S. apply IHle.  Qed.
+
 Lemma le_trans : forall m n o, m <= n -> n <= o -> m <= o.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction H.
+  apply H0.
+  apply IHle.
+  apply Sn_le_m__n_le_m.
+  apply H0. Qed.
+  
 
 Theorem O_le_n : forall n,
   0 <= n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction n.
+  apply le_n.
+  apply le_S.
+  apply IHn. Qed.
 
 Theorem n_le_m__Sn_le_Sm : forall n m,
   n <= m -> S n <= S m.
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros.
+  induction H.
+  apply le_n.
+  apply le_S.
+  apply IHle.
+  Qed.
+  
+  
 
 
 Theorem Sn_le_Sm__n_le_m : forall n m,
   S n <= S m -> n <= m.
-Proof. 
-  (* FILL IN HERE *) Admitted.
+Proof.
+  intros.
+  inversion H.
+  apply le_n.
+  apply Sn_le_m__n_le_m in H1.
+  apply H1.
+  Qed.
+  
+  
+
+
+  
 
 
 Theorem le_plus_l : forall a b,
   a <= a + b.
 Proof. 
-  (* FILL IN HERE *) Admitted.
-
+  intros.
+  induction a.
+  apply O_le_n.
+  simpl. apply n_le_m__Sn_le_Sm. apply IHa. Qed.
+  
+SearchAbout ["plus"].
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof. 
  unfold lt. 
- (* FILL IN HERE *) Admitted.
+ intros.
+ split.
+ induction n2.
+ rewrite plus_0_r in H.
+ apply H.
+ apply IHn2. 
+ apply Sn_le_m__n_le_m in H.
+ rewrite plus_n_Sm. apply H.
+ induction n1.
+ simpl in H.
+ apply H.
+ apply IHn1. 
+ apply Sn_le_m__n_le_m in H.
+ simpl in H.
+ apply H.
+ Qed.
+ 
+ 
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold lt.
+  intros.
+  apply Sn_le_m__n_le_m in H.
+  apply n_le_m__Sn_le_Sm.
+  apply H.
+Qed.
 
 Theorem ble_nat_true : forall n m,
   ble_nat n m = true -> n <= m.
 Proof. 
-  (* FILL IN HERE *) Admitted.
+  intros n.
+  induction n.
+  intros.
+  apply O_le_n.
+  intros.
+  destruct m.
+  inversion H.
+  apply n_le_m__Sn_le_Sm.
+  apply IHn.
+  inversion H.
+  reflexivity. Qed.
+  
+  
+SearchAbout ["ble"].
 
+    
 Theorem le_ble_nat : forall n m,
   n <= m ->
   ble_nat n m = true.
 Proof.
-  (* Hint: This may be easiest to prove by induction on [m]. *)
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  generalize dependent n.
+  induction m.
+  intros.
+  inversion H.
+  reflexivity.
+  intros.
+  destruct n.
+  simpl.
+  reflexivity.
+  simpl.
+  apply IHm.
+  apply Sn_le_Sm__n_le_m in H. apply H. Qed.
+  
+  
+  
 
 Theorem ble_nat_true_trans : forall n m o,
   ble_nat n m = true -> ble_nat m o = true -> ble_nat n o = true.                               
 Proof.
   (* Hint: This theorem can be easily proved without using [induction]. *)
-  (* FILL IN HERE *) Admitted.
+  intros.
+  apply ble_nat_true in H.
+  apply ble_nat_true in H0.
+  apply le_ble_nat.
+  generalize dependent H0.
+  apply le_trans.
+  apply H.
+  Qed.
 
 (** **** Exercise: 2 stars, optional (ble_nat_false)  *)
 Theorem ble_nat_false : forall n m,
   ble_nat n m = false -> ~(n <= m).
 Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
+  intros n m.
+  generalize dependent n.
+  unfold not.
+  induction m as [| m'].
+  intros.
+  inversion H0.
+  rewrite H1 in H. inversion H.
+  intros.
+  destruct n as [| n'].
+  inversion H.
+  simpl in H.
+  apply IHm' in H. apply H.
+  apply Sn_le_Sm__n_le_m in H0. apply H0. Qed.
+  
+
+  
+ 
+ 
+  
+  
+
 
 
 (** **** Exercise: 3 stars (R_provability2)  *)
@@ -856,6 +1101,8 @@ End R.
     - [R 2 [1,0]]
     - [R 1 [1,2,1,0]]
     - [R 6 [3,2,1,0]]
+
+Answer: 1 and 2 are provable
 *)
 
 (** [] *)
